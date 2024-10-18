@@ -22,12 +22,6 @@ const updateProduct = async (id, data) => {
 
 const addTimeInTopTenToProduct = async (id) => {
   const docRef = Products.doc(id);
-  docRef.get().then((doc) => {
-    console.log(
-      "Someone clicked on",
-      doc.data().name
-    );
-  });
   docRef.update({
     count_top10: admin.firestore.FieldValue.increment(1),
   });
@@ -35,7 +29,9 @@ const addTimeInTopTenToProduct = async (id) => {
 
 const addClickedTimeToProduct = async (id) => {
   const docRef = Products.doc(id);
-
+  docRef.get().then((doc) => {
+    console.log("Someone clicked on", doc.data().name);
+  });
   docRef.update({
     count_clicked: admin.firestore.FieldValue.increment(1),
   });
