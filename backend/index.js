@@ -47,7 +47,7 @@ app.get("/status", async (req, res) => {
 app.post("/product-clicked/:id", async (req, res) => {
   const id = req.params.id;
   await addClickedTimeToProduct(id);
-  res.status(200).end();
+  res.status(200).send("ok");
 });
 
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
