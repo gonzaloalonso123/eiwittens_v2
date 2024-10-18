@@ -2,4 +2,4 @@
 **/.env
 **/backup
 **/.firebase
-**/service_account.json
+**/service_account.jsonbackend/.firebase/service_account.json
