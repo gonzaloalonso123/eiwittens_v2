@@ -14,7 +14,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "https://eiwittens.web.app",
-      "https://gieriggroeien.nl/",
+      "https://gieriggroeien.nl",
       "http://localhost:3001",
     ],
   })
