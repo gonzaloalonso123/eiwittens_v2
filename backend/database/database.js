@@ -3,22 +3,19 @@ const {
   collection,
   deleteDoc,
   doc,
-  getDocs,
-  updateDoc,
-  increment,
-  FieldValue,
 } = require("firebase/firestore");
-
 const { db } = require("./firebase");
+const admin = require("firebase-admin");
+
+const Products = db.collection("products");
 
 const getProducts = async () => {
-  const productsRef = collection(db, "products");
-  const querySnapshot = await getDocs(productsRef);
-  const products = [];
+  const querySnapshot = await Products.get();
+  const data = [];
   querySnapshot.forEach((doc) => {
-    products.push({ ...doc.data(), id: doc.id });
+    data.push(doc.data());
   });
-  return products;
+  return data;
 };
 
 const createProduct = async (product) => {
@@ -30,28 +27,25 @@ const deleteProduct = async (id) => {
   await deleteDoc(doc(db, "products", id));
 };
 
-const updateProduct = async (id, product) => {
-  const productRef = doc(db, "products", id);
-  await updateDoc(productRef, product).catch((error) => {
-    console.error("Error updating document: ", error);
-  });
+const updateProduct = async (id, data) => {
+  const docRef = Products.doc(id);
+  await docRef.update(data);
+  const updatedDoc = await docRef.get();
+  return updatedDoc.data();
 };
 
 const addTimeInTopTenToProduct = async (id) => {
-  const productRef = doc(db, "products", id);
-  await updateDoc(productRef, {
-    count_top10: increment(1),
-  }).catch((error) => {
-    console.error("Error updating document: ", error);
+  const docRef = Products.doc(id);
+  docRef.update({
+    count_top10: admin.firestore.FieldValue.increment(1),
   });
 };
 
 const addClickedTimeToProduct = async (id) => {
-  const productRef = doc(db, "products", id);
-  await updateDoc(productRef, {
-    count_clicked: increment(1),
-  }).catch((error) => {
-    console.error("Error updating document: ", error);
+  const docRef = Products.doc(id);
+
+  docRef.update({
+    count_clicked: admin.firestore.FieldValue.increment(1),
   });
 };
 

@@ -1,15 +1,11 @@
-const { initializeApp } = require("firebase/app");
-const { getFirestore } = require("firebase/firestore");
+const admin = require("firebase-admin");
+const dotenv = require("dotenv");
 
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: "eiwittens.firebaseapp.com",
-  projectId: "eiwittens",
-  storageBucket: "eiwittens.appspot.com",
-  messagingSenderId: "16129604687",
-  appId: "1:16129604687:web:58aaba92824a669a273e3a",
-  measurementId: "G-CWC403YJDZ",
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+dotenv.config();
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+});
+
+const db = admin.firestore();
+
 module.exports = { db };

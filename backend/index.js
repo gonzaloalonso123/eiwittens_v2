@@ -7,6 +7,7 @@ const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
 const { retrieveAndPush, scrapeAndPush } = require("./pipes");
 const { addClickedTimeToProduct } = require("./database/database");
+const { makeBackUp } = require("./wordpress");
 
 app.use(
   cors({
@@ -46,10 +47,17 @@ app.post("/product-clicked/:id", async (req, res) => {
 });
 
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
-// scrapeAndPush();
 
 const port = 709;
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+
+
+
+// ------> LAUNCHING ACTIONS <------ //
+
+// retrieveAndPush();
+// scrapeAndPush();
+// makeBackUp();

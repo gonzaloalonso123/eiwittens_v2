@@ -14,6 +14,8 @@ const { performActions } = require("./scraper");
 const { deleteAllPosts, createPost } = require("./wordpress");
 
 const ALLOWED_WARNINGS = 15;
+const PRODUCT_NUMBER = null;
+// const PRODUCT_NUMBER = 10;
 
 const scrapeAndPush = async () => {
   try {
@@ -43,7 +45,10 @@ const retrieveAndPush = async () => {
 };
 
 const executeAllScrapers = async () => {
-  const oldProducts = (await getProducts()).filter((p) => p.enabled);
+  let oldProducts = (await getProducts()).filter((p) => p.enabled);
+  if (PRODUCT_NUMBER) {
+    oldProducts = oldProducts.slice(0, PRODUCT_NUMBER);
+  }
   const newProducts = await scrapeAll(oldProducts);
   addWarnings(newProducts);
   addDiscounts(newProducts);
@@ -88,8 +93,18 @@ const addProteinPrice = (products) => {
 };
 
 const addTrustPilotScore = async (products) => {
+  const scores = {};
+
   for (const product of products) {
-    await getTrustPilotScore(product);
+    if (product.trustpilot_url && !scores[product.trustpilot_url]) {
+      scores[product.trustpilot_url] = await getTrustPilotScore(product.trustpilot_url);
+    }
+  }
+
+  console.log("retrieved trustpilot scores", scores);
+
+  for (const product of products) {
+    product.trustPilotScore = scores[product.trustpilot_url];
   }
 };
 
@@ -104,22 +119,20 @@ const addTopTenCounts = (products) => {
 
 const updateFirebase = async (products) => {
   for (const product of products) {
-    // await updateProduct(product.id, product);
+    await updateProduct(product.id, product);
   }
 };
 
 const updateWordPress = async (products) => {
-  // await deleteAllPosts();
+  await deleteAllPosts();
   for (const product of products) {
     if (!product.warning && product.enabled) {
       const productAsAString = toWordpressJson(product);
-
-      console.log(productAsAString);
-      // await createPost({
-      //   title: product.name,
-      //   content: productAsAString,
-      //   status: "publish",
-      // });
+      await createPost({
+        title: product.name,
+        content: productAsAString,
+        status: "publish",
+      });
     }
   }
 };

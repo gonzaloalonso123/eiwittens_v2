@@ -114,9 +114,9 @@ const NothingToFix = () => {
 
 const FixCard = ({ product, setStoredActions, storedActions, index }) => {
   return (
-    <div className="rounded-md shadow-md p-4" key={index}>
+    <div className="p-4" key={index}>
       <div className="flex gap-4 justify-between my-10">
-        <h1>{product.name}</h1>
+        <h1 className="text-xl font-bold">{product.name}</h1>
         <div className="flex gap-2 items-center">
           <FlyTo url={product.url} />
           <CopyUrl url={product.url} />

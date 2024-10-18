@@ -21,20 +21,18 @@ const applyDiscount = (product) => {
   }
 };
 
-const getTrustPilotScore = async (product) => {
-  if (product.trustpilot_url) {
-    const { price } = await performActions(
-      [
-        {
-          selector: "xpath",
-          xpath: '//*[@id="business-unit-title"]/div/div/p',
-          type: "select",
-        },
-      ],
-      "https://www.trustpilot.com/review/" + product.trustpilot_url
-    );
-    product.trustPilotScore = price;
-  }
+const getTrustPilotScore = async (url) => {
+  const { price: trustpilot_score } = await performActions(
+    [
+      {
+        selector: "xpath",
+        xpath: '//*[@id="business-unit-title"]/div/div/p',
+        type: "select",
+      },
+    ],
+    "https://www.trustpilot.com/review/" + url
+  );
+  return trustpilot_score;
 };
 
 const toWordpressJson = (product) => {

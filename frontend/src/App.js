@@ -10,38 +10,43 @@ import { ToastProvider } from "./providers/Toast";
 
 import { App as AntdApp } from "antd";
 import { QuickFixer } from "./pages/QuickFixer";
+import Login from "./pages/Login";
+import { AuthProvider, useAuth } from "./providers/AuthProvider";
 
 function App() {
   return (
     <AntdApp>
-      <BrowserRouter>
-        <Authenticator />
-      </BrowserRouter>
+      <Config>
+        <BrowserRouter>
+          <AuthProvider>
+            <Authenticator />
+          </AuthProvider>
+        </BrowserRouter>
+      </Config>
     </AntdApp>
   );
 }
 
 const Authenticator = () => {
-  return <AuthenticatedRoutes />;
+  const { user } = useAuth();
+  return user ? <AuthenticatedRoutes /> : <Login />;
 };
 
 const AuthenticatedRoutes = () => {
   return (
-    <Config>
-      <ToastProvider>
-        <Page>
-          <Routes>
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<OneProduct />} />
-            <Route path="/products/create" element={<OneProduct />} />
-            <Route path="/docs" element={<Docs />} />
-            <Route path="/manage" element={<Manage />} />
-            <Route path="/quick-fixer" element={<QuickFixer />} />
-            <Route path="*" element={<h1>Not Found</h1>} />
-          </Routes>
-        </Page>
-      </ToastProvider>
-    </Config>
+    <ToastProvider>
+      <Page>
+        <Routes>
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<OneProduct />} />
+          <Route path="/products/create" element={<OneProduct />} />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="/manage" element={<Manage />} />
+          <Route path="/quick-fixer" element={<QuickFixer />} />
+          <Route path="*" element={<h1>Not Found</h1>} />
+        </Routes>
+      </Page>
+    </ToastProvider>
   );
 };
 
