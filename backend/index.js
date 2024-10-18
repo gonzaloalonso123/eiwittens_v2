@@ -40,6 +40,10 @@ app.post("/status", async (req, res) => {
   res.status(200).end();
 });
 
+app.get("/status", async (req, res) => {
+  res.status(200).send("OK");
+});
+
 app.post("/product-clicked/:id", async (req, res) => {
   const id = req.params.id;
   await addClickedTimeToProduct(id);
@@ -53,8 +57,6 @@ const port = 709;
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
-
-
 
 // ------> LAUNCHING ACTIONS <------ //
 
