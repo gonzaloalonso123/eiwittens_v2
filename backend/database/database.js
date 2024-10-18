@@ -43,8 +43,6 @@ const addClickedTimeToProduct = async (id) => {
 
 module.exports = {
   getProducts,
-  createProduct,
-  deleteProduct,
   updateProduct,
   addTimeInTopTenToProduct,
   addClickedTimeToProduct,
