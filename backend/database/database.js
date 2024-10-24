@@ -1,4 +1,4 @@
-const { addDoc, collection, deleteDoc, doc } = require("firebase/firestore");
+const { addDoc, collection, deleteDoc, doc, arrayUnion } = require("firebase/firestore");
 const { db } = require("./firebase");
 const admin = require("firebase-admin");
 
@@ -33,7 +33,7 @@ const addClickedTimeToProduct = async (id) => {
     console.log("Someone clicked on", doc.data().name);
   });
   docRef.update({
-    count_clicked: admin.firestore.FieldValue.increment(1),
+    count_clicked: arrayUnion(new Date().toISOString()),
   });
 };
 
