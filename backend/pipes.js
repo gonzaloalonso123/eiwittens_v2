@@ -72,7 +72,7 @@ const scrapeAll = async (products) => {
 
 const addWarnings = (products) => {
   for (const product of products) {
-    if (product.price === 0) {
+    if (product.price === 0 || !product.ammount || !product.protein_per_100g) {
       product.warning = true;
     } else {
       product.warning = false;
@@ -97,7 +97,9 @@ const addTrustPilotScore = async (products) => {
 
   for (const product of products) {
     if (product.trustpilot_url && !scores[product.trustpilot_url]) {
-      scores[product.trustpilot_url] = await getTrustPilotScore(product.trustpilot_url);
+      scores[product.trustpilot_url] = await getTrustPilotScore(
+        product.trustpilot_url
+      );
     }
   }
 
