@@ -1,6 +1,6 @@
-const { addDoc, collection, deleteDoc, doc, arrayUnion } = require("firebase/firestore");
 const { db } = require("./firebase");
 const admin = require("firebase-admin");
+import { FieldValue } from "firebase-admin/firestore"
 
 const Products = db.collection("products");
 
@@ -21,10 +21,10 @@ const updateProduct = async (id, data) => {
 };
 
 const addTimeInTopTenToProduct = async (id) => {
-  const docRef = Products.doc(id);
-  docRef.update({
-    count_top10: admin.firestore.FieldValue.increment(1),
-  });
+//   const docRef = Products.doc(id);
+//   docRef.update({
+//     count_top10: admin.firestore.FieldValue.increment(1),
+//   });
 };
 
 const addClickedTimeToProduct = async (id) => {
@@ -33,7 +33,7 @@ const addClickedTimeToProduct = async (id) => {
     console.log("Someone clicked on", doc.data().name);
   });
   docRef.update({
-    count_clicked: arrayUnion(new Date().toISOString()),
+    count_clicked: FieldValue.arrayUnion(new Date().toISOString()),
   });
 };
 
