@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getStatus } from "../client/backend";
+import { migrate } from "../client/database";
 
 const useStatus = () => {
   const [status, setStatus] = useState(false);
@@ -8,6 +9,7 @@ const useStatus = () => {
       setStatus(status);
     });
   }, []);
+//   migrate();
   return status;
 };
 

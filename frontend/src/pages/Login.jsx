@@ -64,7 +64,7 @@ const Login = () => {
 						}}
 					>
 						<Button type="primary" htmlType="submit">
-							Submit
+							Login
 						</Button>
 					</Form.Item>
 					{error && <div className='text-red-500'>{error}</div>}

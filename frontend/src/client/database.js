@@ -45,15 +45,17 @@ const getProductById = async (id) => {
 };
 
 const migrate = async () => {
+	console.log('migrating')
   const products = await getProducts();
-  // const newProducts = products.map((product) => ({
-  //   ...product,
-  //   count_top10: 0,
-  //   warning: false,
-  // }));
-  // newProducts.forEach(async (product) => {
-  //   await updateProduct(product.id, product);
-  // });
+  const newProducts = products.map((product) => ({
+    ...product,
+    count_top10: 0,
+    count_clicked: [],
+    warning: false,
+  }));
+  newProducts.forEach(async (product) => {
+    await updateProduct(product.id, product);
+  });
   console.log(JSON.stringify(products));
 };
 

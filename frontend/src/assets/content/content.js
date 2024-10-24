@@ -25,12 +25,22 @@ export const productTypes = [
 ];
 
 const proteinTypes = [
-  { name: "Whey", value: "whey" },
-  { name: "Clear Whey", value: "clear_whey" },
+  { name: "Whey Proteïne", value: "whey_protein" },
   { name: "Whey Isolate", value: "whey_isolate" },
-  { name: "Vegan", value: "vegan" },
-  { name: "Milk Shake", value: "milk_shake" },
-  { name: "Caseine", value: "caseine" },
+  { name: "Weight Gainer", value: "weight_gainer" },
+  { name: "Vegan Proteïne", value: "vegan_protein" },
+  { name: "Clear whey", value: "clear_whey" },
+  { name: "Collageen Eiwit", value: "collagen_protein" },
+  { name: "Ei Eiwit", value: "egg_protein" },
+  { name: "Beef Proteïne", value: "beef_protein" },
+  { name: "Caseïne", value: "casein" },
+  { name: "Biologische eiwitpoeder", value: "organic_protein" },
+  { name: "Paleo eiwitpoeder", value: "paleo_protein" },
+  { name: "Eiwitpoeder Zonder Zoetstof", value: "unsweetened_protein" },
+  { name: "Proteïne Milkshake", value: "protein_milkshake" },
+  { name: "Lactosevrij proteïne poeder", value: "lactose_free_protein" },
+  { name: "Diet Whey", value: "diet_whey" },
+  { name: "Protein Coffee", value: "protein_coffee" },
 ];
 
 export const productSubtypes = {
