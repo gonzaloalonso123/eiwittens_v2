@@ -15,15 +15,21 @@ const transporter = nodemailer.createTransport({
 const recipents = ["huntymonster@gmail.com", "gieriggroeien.nl@gmail.com"];
 
 const sendMail = async (warnings, oldProducts, newProducts) => {
+  const { table, fluctuationsHappened } = generateCompareTable(
+    oldProducts,
+    newProducts
+  );
   transporter.sendMail({
     from: '"Eiwitten Mailer 👻" <eiwittensmailer@gmail.com>',
     to: recipents,
-    subject: `(${warnings.length}) Proteins not found! ✔`,
+    subject: `(${warnings.length}) Proteins not found! ✔ ${
+      fluctuationsHappened ? "(🌝 Fluctuations happened)" : ""
+    }`,
     html: `
     <h1>Warnings</h1>
     ${generateWarningTable(warnings)}
     <h1>Comparison</h1>
-    ${generateCompareTable(oldProducts, newProducts)}`,
+	${table}`,
   });
 };
 
@@ -47,6 +53,8 @@ const generateCompareTable = (oldProducts, newProducts) => {
     .filter((p) => !p.warning)
     .sort((a, b) => a.priceForProteinGram - b.priceForProteinGram);
   let table = `<table style="width:100%;border:1px solid black;border-collapse: collapse;"><tr><th style="border:1px solid black;padding:10px;">Product</th><th style="border:1px solid black;padding:10px;">Old Price</th><th style="border:1px solid black;padding:10px;">New Price</th><th style="border:1px solid black;padding:10px;">Old price per 100g</th><th style="border:1px solid black;padding:10px;">New price per 100g</th><th style="border:1px solid black;padding:10px;">Fluctuation</th><th style="border:1px solid black;padding:10px;">Old rank</th><th style="border:1px solid black;padding:10px;">New rank</th></tr>`;
+
+  const fluctuationsHappened = false;
   for (let i = 0; i < sortedNewProducts.length; i++) {
     const oldProduct = oldProducts.find(
       (product) => product.id === sortedNewProducts[i].id
@@ -60,6 +68,10 @@ const generateCompareTable = (oldProducts, newProducts) => {
       sortedOldProducts.findIndex(
         (product) => product.id === sortedNewProducts[i].id
       ) + 1;
+
+    if (fluctuation !== 0) {
+      fluctuationsHappened = true;
+    }
 
     table += "<tr>";
     table += `<td style="border:1px solid black;padding:10px;">${oldProduct.name}</td>`;
@@ -77,7 +89,7 @@ const generateCompareTable = (oldProducts, newProducts) => {
     table += "</tr>";
   }
   table += "</table>";
-  return table;
+  return { table, fluctuationsHappened };
 };
 
 const getColorByFluctuation = (fluctuation) => {
