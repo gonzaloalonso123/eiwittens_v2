@@ -1,6 +1,6 @@
 const { db } = require("./firebase");
 const admin = require("firebase-admin");
-import { FieldValue } from "firebase-admin/firestore"
+const { FieldValue } = require("firebase-admin/firestore");
 
 const Products = db.collection("products");
 
@@ -21,10 +21,10 @@ const updateProduct = async (id, data) => {
 };
 
 const addTimeInTopTenToProduct = async (id) => {
-//   const docRef = Products.doc(id);
-//   docRef.update({
-//     count_top10: admin.firestore.FieldValue.increment(1),
-//   });
+  //   const docRef = Products.doc(id);
+  //   docRef.update({
+  //     count_top10: admin.firestore.FieldValue.increment(1),
+  //   });
 };
 
 const addClickedTimeToProduct = async (id) => {
