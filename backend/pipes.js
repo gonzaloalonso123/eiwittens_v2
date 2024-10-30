@@ -147,6 +147,7 @@ const getWarningUrls = (products) => {
       urls.push({
         url: `${dashboardUrl}/${product.id}`,
         name: product.name,
+		severity: product.count_clicked.length,
       });
     }
   }

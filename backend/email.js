@@ -34,11 +34,12 @@ const sendMail = async (warnings, oldProducts, newProducts) => {
 };
 
 const generateWarningTable = (warnings) => {
-  let table = `<table style="width:100%;border:1px solid black;border-collapse: collapse;"><tr><th style="border:1px solid black;padding:10px;">Product</th><th style="border:1px solid black;padding:10px;">URL</th></tr>`;
+  let table = `<table style="width:100%;border:1px solid black;border-collapse: collapse;"><tr><th style="border:1px solid black;padding:10px;">Product</th><th style="border:1px solid black;padding:10px;">URL</th><th style="border:1px solid black;padding:10px;">Severity (Times Clicked)</th></tr>`;
   for (const warning of warnings) {
     table += "<tr>";
     table += `<td style="border:1px solid black;padding:10px;">${warning.name}</td>`;
     table += `<td style="border:1px solid black;padding:10px;">${warning.url}</td>`;
+    table += `<td style="border:1px solid black;padding:10px;">${warning.severity}</td>`;
     table += "</tr>";
   }
   table += "</table>";
