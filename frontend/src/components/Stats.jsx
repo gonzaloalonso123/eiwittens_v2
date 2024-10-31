@@ -2,15 +2,21 @@ import React from "react";
 import { ArrowDownOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import { Card, Col, Row, Statistic } from "antd";
 import { LineChart } from "./LineChart";
+import { formatDate } from "../helpers/helpers";
 
 export const Stats = ({ count_top10, count_clicked }) => {
 	const preparedClickData = count_clicked.reduce((acc, curr) => {
-		const date = new Date(curr);
-		const key = `${date.getDate()}/${date.getDay() + 1}`;
+		const date = new Date(curr.split("T")[0]);
+
+		const year = date.getFullYear();
+		const month = date.getMonth() + 1;
+		const day = date.getDate();
+
+		const key = `${year}-${month < 10 ? "0" + month : month}-${day < 10 ? "0" + day : day}`;
 		acc[key] = acc[key] ? acc[key] + 1 : 1;
 		return acc;
-	}
-		, {});
+	}, {});
+
 	const preparedData = Object.keys(preparedClickData).map((key) => ({
 		x: key,
 		y: preparedClickData[key],

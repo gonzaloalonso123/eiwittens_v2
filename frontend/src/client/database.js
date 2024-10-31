@@ -45,18 +45,27 @@ const getProductById = async (id) => {
 };
 
 const migrate = async () => {
-	console.log('migrating')
+  console.log("migrating");
   const products = await getProducts();
   const newProducts = products.map((product) => ({
     ...product,
-    count_top10: 0,
-    count_clicked: [],
-    warning: false,
+    subtypes: product.subtypes.map((subtype) => {
+      if (subtype == "whey") {
+        return "whey_protein";
+      }
+      if (subtype == "isolate") {
+        return "whey_isolate";
+      }
+      if (subtype == "vegan") {
+        return "vegan_protein";
+      }
+	  else return subtype;
+    }),
   }));
   newProducts.forEach(async (product) => {
     await updateProduct(product.id, product);
   });
-  console.log(JSON.stringify(products));
+  console.log(JSON.stringify(newProducts));
 };
 
 const deleteAllProducts = async () => {

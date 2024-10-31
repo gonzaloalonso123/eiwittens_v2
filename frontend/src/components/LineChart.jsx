@@ -11,8 +11,8 @@ export const LineChart = ({ height, data }) => {
   const boundsHeight = height - MARGIN.top - MARGIN.bottom;
 
   useEffect(() => {
-    setWidth(ref.current.clientWidth);
-    const handleResize = () => setWidth(ref.current.clientWidth);
+    setWidth(ref.current?.clientWidth);
+    const handleResize = () => setWidth(ref.current?.clientWidth);
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);

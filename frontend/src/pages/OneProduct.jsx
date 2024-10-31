@@ -208,10 +208,12 @@ const ProductForm = ({ initialValues, submit }) => {
 };
 
 const ProductStats = ({ product }) => {
-	const preparedData = product.price_history.map((history) => ({
+	const preparedData = product.price_history.filter(p => p.scrapedData != 0).map((history) => ({
 		x: formatDate(history.date),
 		y: history.scrapedData,
 	}));
+
+	console.log(preparedData)
 
 	return (
 		<div>
