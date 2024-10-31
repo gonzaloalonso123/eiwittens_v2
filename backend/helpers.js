@@ -39,11 +39,21 @@ const toWordpressJson = (product) => {
   const entries = [];
   Object.entries(product)
     .filter(
-      ([key, _]) => !["price_history", "scraper", "warning"].includes(key)
+      ([key, _]) =>
+        ![
+          "price_history",
+          "scraper",
+          "warning",
+          "count_top10",
+          "count_clicked",
+        ].includes(key)
     )
     .forEach(([key, value]) => {
-      const val = typeof value === "string" ? value : JSON.stringify(value);
-      entries.push(`$${key}$: $${val}$`);
+      const val =
+        typeof value === "string"
+          ? `$${value}$`
+          : JSON.stringify(value).replace(/"/g, "$");
+      entries.push(`$${key}$: ${val}`);
     });
   const productAsAString = `{${entries.join(",")}}`;
 
