@@ -52,7 +52,7 @@ const toWordpressJson = (product) => {
       const val =
         typeof value === "string" 
           ? `$${value}$`
-          : JSON.stringify(value).replace(/"/g, "$") || '$$';
+          : JSON.stringify(value)?.replace(/"/g, "$") || '$$';
       entries.push(`$${key}$: ${val}`);
     });
   const productAsAString = `{${entries.join(",")}}`;
