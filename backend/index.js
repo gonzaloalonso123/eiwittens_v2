@@ -61,5 +61,5 @@ app.listen(port, () => {
 // ------> LAUNCHING ACTIONS <------ //
 
 // retrieveAndPush();
-// scrapeAndPush();
+scrapeAndPush();
 // makeBackUp();
