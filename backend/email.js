@@ -55,7 +55,7 @@ const generateCompareTable = (oldProducts, newProducts) => {
     .sort((a, b) => a.priceForProteinGram - b.priceForProteinGram);
   let table = `<table style="width:100%;border:1px solid black;border-collapse: collapse;"><tr><th style="border:1px solid black;padding:10px;">Product</th><th style="border:1px solid black;padding:10px;">Old Price</th><th style="border:1px solid black;padding:10px;">New Price</th><th style="border:1px solid black;padding:10px;">Old price per 100g</th><th style="border:1px solid black;padding:10px;">New price per 100g</th><th style="border:1px solid black;padding:10px;">Fluctuation</th><th style="border:1px solid black;padding:10px;">Old rank</th><th style="border:1px solid black;padding:10px;">New rank</th></tr>`;
 
-  const fluctuationsHappened = false;
+  let fluctuationsHappened = false;
   for (let i = 0; i < sortedNewProducts.length; i++) {
     const oldProduct = oldProducts.find(
       (product) => product.id === sortedNewProducts[i].id
