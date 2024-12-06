@@ -14,6 +14,8 @@ const getProducts = async () => {
 };
 
 const updateProduct = async (id, data) => {
+  console.log(id);
+  if(!id) return;
   const docRef = Products.doc(id);
   await docRef.update(data);
   const updatedDoc = await docRef.get();
