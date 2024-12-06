@@ -12,6 +12,7 @@ import { App as AntdApp } from "antd";
 import { QuickFixer } from "./pages/QuickFixer";
 import Login from "./pages/Login";
 import { AuthProvider, useAuth } from "./providers/AuthProvider";
+import { BrandDiscounts } from "./pages/BrandDiscount";
 
 function App() {
   return (
@@ -43,6 +44,7 @@ const AuthenticatedRoutes = () => {
           <Route path="/docs" element={<Docs />} />
           <Route path="/manage" element={<Manage />} />
           <Route path="/quick-fixer" element={<QuickFixer />} />
+          <Route path="/brand-discounts" element={<BrandDiscounts />} />
           <Route path="*" element={<h1>Not Found</h1>} />
         </Routes>
       </Page>

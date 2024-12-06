@@ -3,20 +3,26 @@ export const defaultProduct = {
   store: "",
   url: "",
   ammount: "",
-  protein_per_100_g: "",
+  protein_per_100g: "",
   image: "",
-  trust_pilot_url: "",
+  trustpilot_url: "",
   type: "",
+  subtypes: [],
   price: "",
   discount_type: "",
   discount_code: "",
   discount_value: "",
   enabled: true,
-  actions: [],
+  scraper: [],
+  count_clicked: [],
+  price_history: [],
+  count_top10: [],
+  enabled_top10: true,
+
 };
 
 export const productTypes = [
-  { name: "Protein", value: "protein" },
+  { name: "Proteine", value: "proteine" },
   { name: "Preworkout", value: "preworkout" },
   { name: "Creatine", value: "creatine" },
   { name: "BCAA", value: "bcaa" },
@@ -41,10 +47,12 @@ const proteinTypes = [
   { name: "Lactosevrij proteïne poeder", value: "lactose_free_protein" },
   { name: "Diet Whey", value: "diet_whey" },
   { name: "Protein Coffee", value: "protein_coffee" },
+  { name: "Whey Hydro", value: "whey_hydro" },
+  { name: "Whey Concentraat", value: "whey_concentrate" },
 ];
 
 export const productSubtypes = {
-  protein: proteinTypes,
+  proteine: proteinTypes,
   preworkout: ["Preworkout"],
   creatine: ["Creatine"],
   bcaa: ["BCAA"],

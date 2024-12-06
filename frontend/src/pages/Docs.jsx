@@ -30,17 +30,11 @@ const sections = [
           the backend, for that, you can check if the green button on the top of
           the sidebar is enabled. If you are not connected to the backend, it
           could be for different reasons: The first one is that the backend is
-          stopped, in which case you should notify Gonzalo. Otherwise, it is
-          probably because you don't have mixed content enabled in your browser.
-          Because the backend currenly accepts only http requests, you will need
-          to enabled mixed content in your browser. To do that, you can click on
-          the lock icon on the left of the URL bar, and then click on site
-          settings. In the site settings, you will need to enable mixed content.
-          After that, you should be able to create a scraper. Other reason for
+          stopped, in which case you should notify Gonzalo. Other reason for
           the server to be blocked is that it is currently scraping all the
           products, in which case, you will have to wait until the scraping is
           done. The scheduled times at where this process begins are: hour: [6,
-          12, 18, 0], minute: 0
+          12, 18, 0], minute: 0. Scraping takes around 10 minutes.
         </li>
         <li>
           Once you have done this, you can start creating a scraper. Navigate to
@@ -57,7 +51,8 @@ const sections = [
         <li className="my-2">
           Now you have the browser in the optimal settings, you can start
           selecting the xpath of the elements that need to be clicked, or
-          selected in order to get the price of a product.
+          selected in order to get the price of a product. Use the 'Select' type
+		  of action for the final text to be extracted.
         </li>
         <li className="my-2">
           When the scraper has been configured correctly, you will get the

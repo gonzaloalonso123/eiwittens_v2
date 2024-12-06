@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../assets/images/logo.webp";
 import { Status } from "./Status";
 import { CurrentUser } from "./CurrentUser";
+import { MdDiscount } from "react-icons/md";
+
 
 const { Sider } = Layout;
 
@@ -38,6 +40,11 @@ const items = [
 		icon: <AiFillThunderbolt />,
 		key: "quick-fixer",
 	},
+	{
+		label: "Brand discounts",
+		icon: <MdDiscount />,
+		key: "brand-discounts",
+	}
 ];
 
 export const Page = ({ children }) => {

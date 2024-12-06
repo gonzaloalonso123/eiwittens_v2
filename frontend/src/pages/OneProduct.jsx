@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Checkbox, Form, Input, Select, Spin, Tabs } from "antd";
+import { Button, Checkbox, Form, Spin, Tabs } from "antd";
 import { Actions } from "../components/ScraperMaker";
 import { FaRegEdit } from "react-icons/fa";
 import { FaSave } from "react-icons/fa";
@@ -11,6 +11,7 @@ import {
 } from "../assets/content/content";
 import {
 	CategorySection,
+	FormMultiSelectInput,
 	FormSelectInput,
 	FormTextInput,
 } from "../components/Form";
@@ -159,7 +160,7 @@ const ProductForm = ({ initialValues, submit }) => {
 						name="type"
 						label="Product type"
 					/>
-					<FormSelectInput
+					<FormMultiSelectInput
 						options={productSubtypes[selectedType] ?? []}
 						name="subtype"
 						label="Subtype"
@@ -177,6 +178,9 @@ const ProductForm = ({ initialValues, submit }) => {
 				</CategorySection>
 				<CategorySection title="Enable/Disable">
 					<Form.Item name="enabled" valuePropName="checked" label="Enabled">
+						<Checkbox />
+					</Form.Item>
+					<Form.Item name="enabled_top10" valuePropName="checked" label="Enabled top 10">
 						<Checkbox />
 					</Form.Item>
 				</CategorySection>
@@ -236,3 +240,4 @@ const tabItems = [
 		key: "stats",
 	},
 ];
+

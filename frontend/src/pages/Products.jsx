@@ -38,6 +38,7 @@ const Filters = ({ products, filteredProducts, setFilteredProducts }) => {
   const [store, setStore] = useState("");
 
   useEffect(() => {
+	console.log('changed');
     let filtered = products.filter((product) => {
       if (
         search &&
@@ -57,7 +58,7 @@ const Filters = ({ products, filteredProducts, setFilteredProducts }) => {
       if (type && product.type !== type) {
         return false;
       }
-      if (subtype && product.subtype !== subtype) {
+      if (subtype && product.subtypes.includes(subtype)) {
         return false;
       }
       if (warning && !product.warning) {
