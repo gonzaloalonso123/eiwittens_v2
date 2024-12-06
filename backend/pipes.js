@@ -1,15 +1,6 @@
-const {
-  getProducts,
-  addTimeInTopTenToProduct,
-  updateProduct,
-} = require("./database/database");
+const { getProducts, addTimeInTopTenToProduct, updateProduct } = require("./database/database");
 const { sendMail } = require("./email");
-const {
-  applyDiscount,
-  getTrustPilotScore,
-  toWordpressJson,
-  calculateProteinPrice,
-} = require("./helpers");
+const { applyDiscount, getTrustPilotScore, toWordpressJson, calculateProteinPrice } = require("./helpers");
 const { performActions } = require("./scraper");
 const { deleteAllPosts, createPost } = require("./wordpress");
 
@@ -24,9 +15,7 @@ const scrapeAndPush = async () => {
       await updateWordPress(newProducts);
       console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
     } else {
-      console.log(
-        `TOO MANY WARNINGS ${warnings.length}. NOT PUSHING TO WORDPRESS`
-      );
+      console.log(`TOO MANY WARNINGS ${warnings.length}. NOT PUSHING TO WORDPRESS`);
     }
     return newProducts;
   } catch (e) {
@@ -64,8 +53,10 @@ const executeAllScrapers = async () => {
 const scrapeAll = async (products) => {
   const scrapedProducts = products;
   for (const product of products) {
-    const { price } = await performActions(product.scraper, product.url);
-    product.price = price;
+    if (product.scrape_enabled) {
+      const { price } = await performActions(product.scraper, product.url);
+      product.price = price;
+    }
   }
   return scrapedProducts;
 };
@@ -97,9 +88,7 @@ const addTrustPilotScore = async (products) => {
 
   for (const product of products) {
     if (product.trustpilot_url && !scores[product.trustpilot_url]) {
-      scores[product.trustpilot_url] = await getTrustPilotScore(
-        product.trustpilot_url
-      );
+      scores[product.trustpilot_url] = await getTrustPilotScore(product.trustpilot_url);
     }
   }
 
@@ -111,9 +100,7 @@ const addTrustPilotScore = async (products) => {
 };
 
 const addTopTenCounts = (products) => {
-  products = products.sort(
-    (a, b) => a.priceForProteinGram - b.priceForProteinGram
-  );
+  products = products.sort((a, b) => a.priceForProteinGram - b.priceForProteinGram);
   for (let i = 0; i < 10; i++) {
     addTimeInTopTenToProduct(products[i].id);
   }
