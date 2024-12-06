@@ -1,5 +1,5 @@
 const { getProducts, addTimeInTopTenToProduct, updateProduct } = require("./database/database");
-const { sendMail } = require("./email");
+const { sendMail, sendErrorMail } = require("./email");
 const { applyDiscount, getTrustPilotScore, toWordpressJson, calculateProteinPrice } = require("./helpers");
 const { performActions } = require("./scraper");
 const { deleteAllPosts, createPost } = require("./wordpress");
@@ -16,10 +16,12 @@ const scrapeAndPush = async () => {
       console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
     } else {
       console.log(`TOO MANY WARNINGS ${warnings.length}. NOT PUSHING TO WORDPRESS`);
+      sendErrorMail("too many");
     }
     return newProducts;
   } catch (e) {
     console.log("Error in scrapeAndPush", e);
+    sendErrorMail("catch");
   }
 };
 
