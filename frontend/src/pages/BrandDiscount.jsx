@@ -61,6 +61,7 @@ const BrandDiscountList = () => {
 
 	return (
 		<div>
+			{discounts.length === 0 && <h1 className="text-xl font-semibold flex items-center gap-2 px-6 mb-10">No active discounts</h1>}
 			{discounts.map((discount, key) => (
 				<OneDiscount discount={discount} key={key} toast={toast} refresh={refresh} />
 			))}

@@ -12,8 +12,8 @@ const scrapeAndPush = async () => {
   try {
     const { warnings, newProducts } = await executeAllScrapers();
     if (warnings.length < ALLOWED_WARNINGS) {
-      await updateWordPress(newProducts);
-      console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
+    //   await updateWordPress(newProducts);
+    //   console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
     } else {
       console.log(`TOO MANY WARNINGS ${warnings.length}. NOT PUSHING TO WORDPRESS`);
       sendErrorMail("too many");

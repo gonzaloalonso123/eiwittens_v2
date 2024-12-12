@@ -18,7 +18,7 @@ export const defaultProduct = {
   price_history: [],
   count_top10: [],
   enabled_top10: true,
-
+  scrape_enabled: true,
 };
 
 export const productTypes = [

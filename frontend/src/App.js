@@ -7,12 +7,13 @@ import { Docs } from "./pages/Docs";
 import { Manage } from "./pages/Manage";
 import { Config } from "./Config";
 import { ToastProvider } from "./providers/Toast";
-
-import { App as AntdApp } from "antd";
+import RogerImage from "./assets/images/rogier.png";
+import { App as AntdApp, Button } from "antd";
 import { QuickFixer } from "./pages/QuickFixer";
 import Login from "./pages/Login";
 import { AuthProvider, useAuth } from "./providers/AuthProvider";
 import { BrandDiscounts } from "./pages/BrandDiscount";
+import { useState } from "react";
 
 function App() {
   return (
@@ -34,7 +35,11 @@ const Authenticator = () => {
 };
 
 const AuthenticatedRoutes = () => {
-  return (
+  const [timoPopUpVisible, setTimoPopUpVisible] = useState(true);
+
+  return timoPopUpVisible ? (
+    <TimoPopUp close={() => setTimoPopUpVisible(false)} />
+  ) : (
     <ToastProvider>
       <Page>
         <Routes>
@@ -53,3 +58,18 @@ const AuthenticatedRoutes = () => {
 };
 
 export default App;
+
+const TimoPopUp = ({ close }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 w-screen h-screen flex items-center justify-center">
+      <div className="bg-white rounded-md shadow-md flex flex-col p-4 items-center justify-center">
+        <img src={RogerImage} alt="Roger" className="w-24 h-24 rounded-full" />
+        <h1 className="font-bold text-xl">You got this, Timo</h1>
+        <p>Keep up the good work</p>
+        <Button primary onClick={close}>
+          Close
+        </Button>
+      </div>
+    </div>
+  );
+};

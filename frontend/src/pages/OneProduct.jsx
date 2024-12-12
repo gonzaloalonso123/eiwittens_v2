@@ -162,8 +162,8 @@ const ProductForm = ({ initialValues, submit }) => {
 					/>
 					<FormMultiSelectInput
 						options={productSubtypes[selectedType] ?? []}
-						name="subtype"
-						label="Subtype"
+						name="subtypes"
+						label="Subtypes"
 					/>
 					<FormTextInput label="Price" name="price" />
 				</CategorySection>
@@ -181,6 +181,9 @@ const ProductForm = ({ initialValues, submit }) => {
 						<Checkbox />
 					</Form.Item>
 					<Form.Item name="enabled_top10" valuePropName="checked" label="Enabled top 10">
+						<Checkbox />
+					</Form.Item>
+					<Form.Item name="scrape_enabled" valuePropName="checked" label="Scraping enabled">
 						<Checkbox />
 					</Form.Item>
 				</CategorySection>

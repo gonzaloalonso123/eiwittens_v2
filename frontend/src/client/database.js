@@ -96,7 +96,7 @@ const migrate = async () => {
   const products = await getProducts();
   const newProducts = products.map((product) => ({
     ...product,
-    price_history: product.price_history || [],
+    subtypes: product.subtypes || product.subtype,
   }));
   newProducts.forEach(async (product) => {
     await updateProduct(product.id, product);

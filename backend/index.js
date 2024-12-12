@@ -6,17 +6,12 @@ const cors = require("cors");
 const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
 const { retrieveAndPush, scrapeAndPush } = require("./pipes");
-const { addClickedTimeToProduct } = require("./database/database");
-const { makeBackUp } = require("./wordpress");
+const { addClickedTimeToProduct, getProducts } = require("./database/database");
+const { makeBackUp, getAllPosts } = require("./wordpress");
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://eiwittens.web.app",
-      "https://gieriggroeien.nl",
-      "http://localhost:3001",
-    ],
+    origin: ["http://localhost:3000", "https://eiwittens.web.app", "https://gieriggroeien.nl", "http://localhost:3001"],
   })
 );
 app.use(express.json());
@@ -42,6 +37,11 @@ app.post("/status", async (req, res) => {
 
 app.get("/status", async (req, res) => {
   res.status(200).send("OK");
+});
+
+app.get("/posts", async (req, res) => {
+  const posts = await getProducts();
+  res.json(posts);
 });
 
 app.post("/product-clicked/:id", async (req, res) => {
