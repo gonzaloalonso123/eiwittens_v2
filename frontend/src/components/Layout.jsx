@@ -10,6 +10,7 @@ import Logo from "../assets/images/logo.webp";
 import { Status } from "./Status";
 import { CurrentUser } from "./CurrentUser";
 import { MdDiscount } from "react-icons/md";
+import { IoAnalytics } from "react-icons/io5";
 
 
 const { Sider } = Layout;
@@ -44,6 +45,11 @@ const items = [
 		label: "Brand discounts",
 		icon: <MdDiscount />,
 		key: "brand-discounts",
+	},
+	{
+		label:"General Analytics",
+		icon: <IoAnalytics />,
+		key: "general-analytics",
 	}
 ];
 

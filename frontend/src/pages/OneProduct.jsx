@@ -27,6 +27,7 @@ import { Stats } from "../components/Stats";
 import { formatDate } from "../helpers/helpers";
 import { useToast } from "../providers/Toast";
 import { MdError } from "react-icons/md";
+import { useWatch } from "antd/es/form/Form";
 
 const formSettings = {
 	name: "product",
@@ -128,10 +129,17 @@ const ProductForm = ({ initialValues, submit }) => {
 	const [form] = Form.useForm();
 	const url = Form.useWatch("url", form);
 	const selectedType = Form.useWatch("type", form);
+	const selectedSubtypes = Form.useWatch("subtypes", form);
 	const submitAndDisable = (values) => {
 		submit(values);
 		setDisabled(true);
 	};
+
+	useEffect(() => {
+		console.log(selectedSubtypes);
+		console.log(form.getFieldsValue());
+	}, [selectedSubtypes])
+
 	return (
 		<>
 			<ProductFormHeader
@@ -152,7 +160,12 @@ const ProductForm = ({ initialValues, submit }) => {
 					<FormTextInput label="Store" name="store" />
 					<FormTextInput label="URL" name="url" />
 					<FormTextInput label="Ammount" name="ammount" />
-					<FormTextInput label="Protein per 100g" name="protein_per_100g" />
+					{selectedType == "proteine"
+						? <FormTextInput label="Protein per 100g" name="protein_per_100g" />
+						: selectedType == "creatine"
+							? <FormTextInput label="Creatine per 100g" name="creatine_per_100g" />
+							: null
+					}
 					<FormTextInput label="Image name" name="image" />
 					<FormTextInput label="Trust Pilot URL" name="trustpilot_url" />
 					<FormSelectInput
@@ -165,6 +178,8 @@ const ProductForm = ({ initialValues, submit }) => {
 						name="subtypes"
 						label="Subtypes"
 					/>
+					{selectedSubtypes?.includes("weight_gainer") && <FormTextInput label="Sugar per 100g" name="sugar_per_100g" />}
+					{selectedSubtypes?.includes("weight_gainer") && <FormTextInput label="Calories per 100g" name="calories_per_100g" />}
 					<FormTextInput label="Price" name="price" />
 				</CategorySection>
 				<CategorySection title="Discounts">

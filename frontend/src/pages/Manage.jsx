@@ -14,13 +14,6 @@ export const Manage = () => {
 		setLoading(false);
 		toast.success("Scraped and pushed to Wordpress");
 	};
-	const push = async () => {
-		setLoading(true);
-		await pushToWordpress();
-		setLoading(false);
-		toast.success("Pushed to Wordpress");
-	};
-
 	return (
 		<div>
 			<div className="rounded-md bg-gray-100 text-white text-2xl text-center p-4">
@@ -42,15 +35,7 @@ export const Manage = () => {
 							disabled={loading}
 							className="w-full"
 						>
-							Scrape And Push
-						</Button>
-						<Button
-							onClick={push}
-							loading={loading}
-							disabled={loading}
-							className="w-full"
-						>
-							Only Push
+							Scrape all products
 						</Button>
 					</div>
 				</div>

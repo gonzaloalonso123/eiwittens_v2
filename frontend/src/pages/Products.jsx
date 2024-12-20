@@ -3,14 +3,19 @@ import { getProducts } from "../client/database";
 import { ProductCard } from "../components/ProductCard";
 import { Input, Select } from "antd";
 import { productSubtypes, productTypes } from "../assets/content/content";
+import { Loading } from "../components/loading/Loading";
+import { StackedChart } from "../components/StackedChart";
+import { ProductsGeneralAnaltyics } from "./ProductsGeneralAnalytics";
 
 export const Products = () => {
 	const [products, setProducts] = useState([]);
+	const [loading, setLoading] = useState(true);
 	const [filteredProducts, setFilteredProducts] = useState([]);
 
 	useEffect(() => {
 		getProducts().then((products) => {
 			setProducts(products);
+			setLoading(false);
 			setFilteredProducts(products);
 		});
 	}, []);
@@ -22,6 +27,7 @@ export const Products = () => {
 				setFilteredProducts={setFilteredProducts}
 				filteredProducts={filteredProducts}
 			/>
+			{loading && <div className="w-full flex justify-center"><Loading /></div>}
 			{filteredProducts.map((product, key) => (
 				<ProductCard product={product} key={key} />
 			))}

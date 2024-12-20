@@ -14,6 +14,7 @@ import Login from "./pages/Login";
 import { AuthProvider, useAuth } from "./providers/AuthProvider";
 import { BrandDiscounts } from "./pages/BrandDiscount";
 import { useState } from "react";
+import { ProductsGeneralAnaltyics } from "./pages/ProductsGeneralAnalytics";
 
 function App() {
   return (
@@ -50,6 +51,7 @@ const AuthenticatedRoutes = () => {
           <Route path="/manage" element={<Manage />} />
           <Route path="/quick-fixer" element={<QuickFixer />} />
           <Route path="/brand-discounts" element={<BrandDiscounts />} />
+          <Route path="/general-analytics" element={<ProductsGeneralAnaltyics />} />
           <Route path="*" element={<h1>Not Found</h1>} />
         </Routes>
       </Page>

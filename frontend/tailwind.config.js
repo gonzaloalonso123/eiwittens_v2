@@ -1,10 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.jsx"],
+  darkMode: ["class"],
+  content: ["src/**/*.{js,jsx}"],
   theme: {
     extend: {
-      colors: { "eiwit-orange": "#FF630D", "eiwit-blue": "#00BED1" },
+      colors: {
+        "eiwit-orange": "#FF630D",
+        "eiwit-blue": "#00BED1",
+      },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
