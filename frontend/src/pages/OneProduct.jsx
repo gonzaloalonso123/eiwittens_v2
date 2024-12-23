@@ -15,7 +15,7 @@ import {
 	FormSelectInput,
 	FormTextInput,
 } from "../components/Form";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
 	createProduct,
 	getProductById,
@@ -27,7 +27,7 @@ import { Stats } from "../components/Stats";
 import { formatDate } from "../helpers/helpers";
 import { useToast } from "../providers/Toast";
 import { MdError } from "react-icons/md";
-import { useWatch } from "antd/es/form/Form";
+import { IoDuplicate } from "react-icons/io5";
 
 const formSettings = {
 	name: "product",
@@ -50,6 +50,8 @@ export const OneProduct = () => {
 	const [loading, setLoading] = useState(false);
 	const [activeTab, setActiveTab] = useState("info");
 	const toast = useToast();
+	const location = useLocation();
+	const startingProduct = location.state?.startingProduct;
 
 	useEffect(() => {
 		if (id) {
@@ -58,6 +60,10 @@ export const OneProduct = () => {
 				setLoading(false);
 				setInitialValues(product);
 			});
+		}
+		else if (startingProduct) {
+			const { id, ...rest } = startingProduct;
+			setInitialValues(rest);
 		}
 	}, [id]);
 
@@ -99,7 +105,8 @@ export const OneProduct = () => {
 	);
 };
 
-const ProductFormHeader = ({ title, disabled, setDisabled, warning }) => {
+const ProductFormHeader = ({ title, disabled, setDisabled, warning, currentProduct }) => {
+	const navigate = useNavigate();
 	return (
 		<div className="max-w-2xl flex justify-between items-center px-6">
 			<h1 className="text-2xl font-bold flex items-center gap-2">
@@ -110,22 +117,32 @@ const ProductFormHeader = ({ title, disabled, setDisabled, warning }) => {
 					</div>
 				)}
 			</h1>
-			{title != "New Product" && (
-				<Button
-					onClick={() => setDisabled(!disabled)}
-					className="ml-10"
-					type="primary"
-					icon={<FaRegEdit />}
-				>
-					{disabled ? "Edit" : "Cancel"}
-				</Button>
+			{currentProduct.id && (
+				<div className="flex items-center">
+					<Button
+						onClick={() => setDisabled(!disabled)}
+						className="ml-10"
+						type="primary"
+						icon={<FaRegEdit />}
+					>
+						{disabled ? "Edit" : "Cancel"}
+					</Button>
+					<Button
+						className="ml-10"
+						type="secondary"
+						icon={<IoDuplicate />}
+						onClick={() => navigate("/products/create", { state: { startingProduct: { ...currentProduct, name: `${currentProduct.name} [DUPLICATE]` } } })}
+					>
+						Duplicate
+					</Button>
+				</div>
 			)}
 		</div>
 	);
 };
 
 const ProductForm = ({ initialValues, submit }) => {
-	const [disabled, setDisabled] = useState(initialValues.id !== undefined);
+	const [disabled, setDisabled] = useState(true);
 	const [form] = Form.useForm();
 	const url = Form.useWatch("url", form);
 	const selectedType = Form.useWatch("type", form);
@@ -134,11 +151,11 @@ const ProductForm = ({ initialValues, submit }) => {
 		submit(values);
 		setDisabled(true);
 	};
-
 	useEffect(() => {
-		console.log(selectedSubtypes);
-		console.log(form.getFieldsValue());
-	}, [selectedSubtypes])
+		if (!initialValues.id) {
+			setDisabled(false);
+		}
+	}, [initialValues])
 
 	return (
 		<>
@@ -147,6 +164,7 @@ const ProductForm = ({ initialValues, submit }) => {
 				setDisabled={setDisabled}
 				title={initialValues.name || "New Product"}
 				warning={initialValues.warning || false}
+				currentProduct={initialValues}
 			/>
 			<Form
 				{...formSettings}

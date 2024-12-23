@@ -72,7 +72,7 @@ const BrandDiscountList = () => {
 const OneDiscount = ({ discount, toast, refresh }) =>
 	<div className="flex items-center justify-between px-6 py-4 border-t">
 		<div>
-			<h1>{discount.brand}</h1>
+			<h1 className='font-bold'>{discount.id}</h1>
 			<p>{discount.discount_type}</p>
 			<p>{discount.discount_code}</p>
 			<p>{discount.discount_value}</p>
@@ -97,7 +97,6 @@ const AddDiscount = () => {
 
 	useEffect(() => {
 		getProducts().then((products) => {
-			console.log(products);
 			const brands = products.map((product) => product.store);
 			setBrands([...new Set(brands)]);
 		});

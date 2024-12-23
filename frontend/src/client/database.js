@@ -96,20 +96,12 @@ const migrate = async () => {
   const products = await getProducts();
   const newProducts = products.map((product) => ({
     ...product,
-    subtypes: changeCaseinForCaseine(product.subtypes),
+	discount_value : product.discount_value === 0 ? null : product.discount_value,
   }));
   newProducts.forEach(async (product) => {
     await updateProduct(product.id, product);
   });
   console.log(JSON.stringify(newProducts));
-};
-
-const changeCaseinForCaseine = (subtype_array) => {
-  const index = subtype_array.indexOf("casein");
-  if (index !== -1) {
-    subtype_array[index] = "caseine";
-  }
-  return subtype_array;
 };
 
 export { getProducts, createProduct, deleteProduct, updateProduct, getProductById, applyDiscountToAllProductsOfStore, removeDiscountFromAllProductsOfStore, getBrandDiscounts, migrate };

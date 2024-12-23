@@ -14,7 +14,7 @@ export const defaultProduct = {
   price: "",
   discount_type: "",
   discount_code: "",
-  discount_value: 0,
+  discount_value: null,
   scraper: [],
   count_clicked: [],
   price_history: [],
