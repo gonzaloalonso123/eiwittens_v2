@@ -57,12 +57,17 @@ const scrapeAll = async (products) => {
   for (const product of products) {
     if (product.scrape_enabled) {
       const { price } = await performActions(product.scraper, product.url);
-      scrapedProducts.price = price;
+      if (product.type == "creatine") {
+        console.log("type is creatine and price is", price);
+      }
+      scrapedProducts[i].price = price;
     }
   }
 
-
-  console.log("scrapedProducts", scrapedProducts.filter((p) => p.type === "creatine"));
+  console.log(
+    "scrapedProducts",
+    scrapedProducts.filter((p) => p.type === "creatine")
+  );
   return scrapedProducts;
 };
 
@@ -126,5 +131,5 @@ const getWarningUrls = (products) => {
 module.exports = {
   scrapeAndPush,
   retrieveAndPush,
-  refreshTrustPilot
+  refreshTrustPilot,
 };
