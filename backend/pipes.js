@@ -38,7 +38,7 @@ const executeAllScrapers = async () => {
   const newProducts = await scrapeAll(oldProducts);
   addWarnings(newProducts);
   addDiscounts(newProducts);
-  addProteinPrice(newProducts);
+  calculations(newProducts);
   await updateFirebase(newProducts);
   const warnings = getWarningUrls(newProducts);
   sendMail(warnings, oldProducts, newProducts);
