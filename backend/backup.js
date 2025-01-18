@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { getProducts } = require("./database/database");
 
-const createBackupFile = async (products) => {
+const createBackupFile = async () => {
   const products = await getProducts();
   const backupFilePath = path.join(__dirname, "backup", `products_backup_${Date.now()}.json`);
   const backupData = JSON.stringify(products, null, 2);
