@@ -45,7 +45,7 @@ const performActions = async (actions, url) => {
     }
     console.log(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
   } catch (e) {
-    console.log("[ERROR EXECUTING ACTION]", e);
+    console.log("[ERROR EXECUTING ACTION]");
     error.text = e.toString();
     error.index = index;
     price = 0;
