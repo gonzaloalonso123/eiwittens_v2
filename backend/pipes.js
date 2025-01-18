@@ -1,8 +1,7 @@
-const { getProducts, addTimeInTopTenToProduct, updateProduct } = require("./database/database");
+const { getProducts, updateProduct } = require("./database/database");
 const { sendMail, sendErrorMail } = require("./email");
-const { applyDiscount, getTrustPilotScore, toWordpressJson, calculateProteinPrice } = require("./helpers");
+const { applyDiscount, getTrustPilotScore, makeCalculations } = require("./helpers");
 const { performActions } = require("./scraper");
-const { deleteAllPosts, createPost } = require("./wordpress");
 
 const ALLOWED_WARNINGS = 15;
 const PRODUCT_NUMBER = null;
@@ -80,9 +79,9 @@ const addDiscounts = (products) => {
   }
 };
 
-const addProteinPrice = (products) => {
+const calculations = (products) => {
   for (const product of products) {
-    calculateProteinPrice(product);
+    makeCalculations(product);
   }
 };
 

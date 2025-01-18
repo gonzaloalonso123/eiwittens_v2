@@ -8,11 +8,19 @@ const getElementToBeCompared = (product) => {
     return product.creatine_per_100g;
   }
 };
-const calculateProteinPrice = (product) => {
+const makeCalculations = (product) => {
   const elementToBeCompared = getElementToBeCompared(product);
-  const element_ammount = product.ammount * (elementToBeCompared / 100);
+  const priceForElementGram = getPriceByAHundredGrams(product, elementToBeCompared);
+  product.priceForElementGram = priceForElementGram;
+  if (product.subtypes.includes("weight_gainer")) {
+    product.price_per_100_calories = getPriceByAHundredGrams(product, product.calories_per_100g);
+  }
+};
+
+const getPriceByAHundredGrams = (product, element) => {
+  const element_ammount = product.ammount * (element / 100);
   const element_price = product.price / element_ammount;
-  product.priceForElementGram = Number(element_price * 100).toFixed(2);
+  return Number(element_price * 100).toFixed(2);
 };
 
 const applyDiscount = (product) => {
@@ -44,7 +52,7 @@ const getTrustPilotScore = async (url) => {
 };
 
 module.exports = {
-  calculateProteinPrice,
+  makeCalculations,
   applyDiscount,
   getTrustPilotScore,
 };
