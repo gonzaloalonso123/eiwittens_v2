@@ -8,13 +8,13 @@ const getProducts = async () => {
   const querySnapshot = await Products.get();
   const data = [];
   querySnapshot.forEach((doc) => {
-    data.push(doc.data());
+    data.push({...doc.data(), id: doc.id});
   });
   return data;
 };
 
 const updateProduct = async (id, data) => {
-  console.log(id);
+  console.log(id, data.type, data.price);
   if (!id) return;
   const docRef = Products.doc(id);
   await docRef.update(data);

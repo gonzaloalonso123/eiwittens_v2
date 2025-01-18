@@ -60,6 +60,8 @@ const scrapeAll = async (products) => {
       scrapedProducts.price = price;
     }
   }
+
+
   return scrapedProducts;
 };
 
