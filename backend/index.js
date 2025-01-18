@@ -8,6 +8,7 @@ const schedule = require("node-schedule");
 const { retrieveAndPush, scrapeAndPush, refreshTrustPilot } = require("./pipes");
 const { addClickedTimeToProduct, getProducts } = require("./database/database");
 const { makeBackUp, getAllPosts, deleteAllPosts } = require("./wordpress");
+const { createBackupFile } = require("./backup");
 
 app.use(
   cors({
@@ -47,6 +48,7 @@ app.post("/product-clicked/:id", async (req, res) => {
 
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
 schedule.scheduleJob({ hour: [3], minute: 0 }, refreshTrustPilot);
+schedule.scheduleJob({ hour: 13, minute: 0, dayOfWeek: 0 }, createBackupFile);
 
 const port = 709;
 
