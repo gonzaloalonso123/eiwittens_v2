@@ -12,9 +12,6 @@ const scrapeAndPush = async () => {
   try {
     const { warnings, newProducts } = await executeAllScrapers();
     if (warnings.length < ALLOWED_WARNINGS) {
-      //   await updateWordPress(newProducts);
-      //   console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
-    } else {
       sendErrorMail(`There are many warnings (${warnings.length})`);
     }
     return newProducts;
@@ -45,7 +42,6 @@ const executeAllScrapers = async () => {
   addProteinPrice(newProducts);
   await updateFirebase(newProducts);
   await addTrustPilotScore(newProducts);
-  addTopTenCounts(newProducts);
   const warnings = getWarningUrls(newProducts);
   sendMail(warnings, oldProducts, newProducts);
   return { warnings, newProducts };
@@ -64,7 +60,7 @@ const scrapeAll = async (products) => {
 
 const addWarnings = (products) => {
   for (const product of products) {
-    if (product.price === 0 || !product.ammount || !product.protein_per_100g) {
+    if (product.price === 0 || !product.ammount || (!product.protein_per_100g && !product.creatine_per_100g)) {
       product.warning = true;
     } else {
       product.warning = false;
@@ -93,17 +89,8 @@ const addTrustPilotScore = async (products) => {
     }
   }
 
-  console.log("retrieved trustpilot scores", scores);
-
   for (const product of products) {
     product.trustPilotScore = scores[product.trustpilot_url];
-  }
-};
-
-const addTopTenCounts = (products) => {
-  products = products.sort((a, b) => a.priceForProteinGram - b.priceForProteinGram);
-  for (let i = 0; i < 10; i++) {
-    addTimeInTopTenToProduct(products[i].id);
   }
 };
 

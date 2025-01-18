@@ -91,7 +91,7 @@ const getColorByNewIndex = (dif) => {
   }
 };
 
-const sendErrorMail = (type) => {
+const sendErrorMail = (type, error) => {
   transporter.sendMail({
     from: '"Eiwitten Mailer 👻" <eiwittensmailer@gmail.com>',
     to: recipents,
