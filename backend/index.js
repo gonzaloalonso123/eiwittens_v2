@@ -5,7 +5,7 @@ const app = express();
 const cors = require("cors");
 const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
-const { retrieveAndPush, scrapeAndPush } = require("./pipes");
+const { retrieveAndPush, scrapeAndPush, refreshTrustPilot } = require("./pipes");
 const { addClickedTimeToProduct, getProducts } = require("./database/database");
 const { makeBackUp, getAllPosts, deleteAllPosts } = require("./wordpress");
 
@@ -46,6 +46,7 @@ app.post("/product-clicked/:id", async (req, res) => {
 });
 
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
+schedule.scheduleJob({ hour: [3], minute: 0 }, refreshTrustPilot);
 
 const port = 709;
 

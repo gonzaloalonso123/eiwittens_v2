@@ -33,8 +33,6 @@ const retrieveAndPush = async () => {
 
 const executeAllScrapers = async () => {
   let oldProducts = (await getProducts()).filter((p) => p.enabled);
-
-  console.log('oldproduct contains', oldProducts.filter(p => p.type == "creatine"))
   if (PRODUCT_NUMBER) {
     oldProducts = oldProducts.slice(0, PRODUCT_NUMBER);
   }
@@ -43,10 +41,15 @@ const executeAllScrapers = async () => {
   addDiscounts(newProducts);
   addProteinPrice(newProducts);
   await updateFirebase(newProducts);
-  await addTrustPilotScore(newProducts);
   const warnings = getWarningUrls(newProducts);
   sendMail(warnings, oldProducts, newProducts);
   return { warnings, newProducts };
+};
+
+const refreshTrustPilot = async () => {
+  const products = getProducts();
+  await addTrustPilotScore(products);
+  updateFirebase(products);
 };
 
 const scrapeAll = async (products) => {
@@ -120,4 +123,5 @@ const getWarningUrls = (products) => {
 module.exports = {
   scrapeAndPush,
   retrieveAndPush,
+  refreshTrustPilot
 };
