@@ -53,6 +53,9 @@ const scrapeAll = async (products) => {
     if (product.scrape_enabled) {
       const { price } = await performActions(product.scraper, product.url);
       product.price = price;
+      if (product.type == "creatine") {
+        console.log("scraping creatine", price);
+      }
     }
   }
   return scrapedProducts;
