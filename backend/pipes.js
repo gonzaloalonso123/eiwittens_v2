@@ -54,20 +54,13 @@ const refreshTrustPilot = async () => {
 
 const scrapeAll = async (products) => {
   const scrapedProducts = products.map((p) => ({ ...p }));
-  for (const product of products) {
+  for (let i = 0; i < products.length; i++) {
+    const product = products[i];
     if (product.scrape_enabled) {
       const { price } = await performActions(product.scraper, product.url);
-      if (product.type == "creatine") {
-        console.log("type is creatine and price is", price);
-      }
       scrapedProducts[i].price = price;
     }
   }
-
-  console.log(
-    "scrapedProducts",
-    scrapedProducts.filter((p) => p.type === "creatine")
-  );
   return scrapedProducts;
 };
 
