@@ -1,7 +1,7 @@
 const { performActions } = require("./scraper");
 
 const getElementToBeCompared = (product) => {
-  if (product.type === "proteine") {
+  if (product.type === "proteine" || product.type === "weight_gainer") {
     return product.protein_per_100g;
   }
   if (product.type === "creatine") {
@@ -10,9 +10,9 @@ const getElementToBeCompared = (product) => {
 };
 const makeCalculations = (product) => {
   const elementToBeCompared = getElementToBeCompared(product);
-  const priceForElementGram = getPriceByAHundredGrams(product, elementToBeCompared);
-  product.priceForElementGram = priceForElementGram;
-  if (product.subtypes.includes("weight_gainer")) {
+  const price_for_element_gram = getPriceByAHundredGrams(product, elementToBeCompared);
+  product.price_for_element_gram = price_for_element_gram;
+  if (product.type == "weight_gainer") {
     product.price_per_100_calories = getPriceByAHundredGrams(product, product.calories_per_100g);
   }
 };
