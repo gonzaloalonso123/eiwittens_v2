@@ -21,11 +21,6 @@ app.post("/scrape-all", async (req, res) => {
   res.json(products);
 });
 
-app.post("/push-to-wordpress", async (req, res) => {
-  await retrieveAndPush();
-  res.json({ message: "Flow completed" });
-});
-
 app.post("/test-scraper", async (req, res) => {
   const { price, error } = await performActions(req.body.actions, req.body.url);
   res.json({ price, error });
