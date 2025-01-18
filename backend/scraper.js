@@ -62,8 +62,6 @@ const performActions = async (actions, url) => {
 };
 
 const performAction = async (driver, action, selector, price) => {
-  console.log(action);
-
   if (action.type === "click") {
     await performClickAction(driver, action, selector);
   } else if (action.type === "selectOption") {
