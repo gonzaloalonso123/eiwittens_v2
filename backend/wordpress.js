@@ -5,9 +5,7 @@ const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL;
 const APPLICATION_PASSWORD = process.env.WORDPRESS_APPLICATION_PASSWORD;
 const BACKUP_URL = "./backup/backup.json";
 
-const authString = Buffer.from(`gonzalo:${APPLICATION_PASSWORD}`).toString(
-  "base64"
-);
+const authString = Buffer.from(`gonzalo:${APPLICATION_PASSWORD}`).toString("base64");
 
 const createPost = async (post) => {
   try {
@@ -39,15 +37,14 @@ const getAllPosts = async () => {
 
   while (true) {
     try {
-      const response = await axios.get(
-        `${WORDPRESS_API_URL}?per_page=100&page=${page}`
-      );
+      const response = await axios.get(`${WORDPRESS_API_URL}?per_page=100&page=${page}`);
       const posts = response.data;
       if (posts.length === 0) break;
 
       allPosts = allPosts.concat(posts);
       page++;
     } catch (error) {
+      console.log(error);
       break;
     }
   }

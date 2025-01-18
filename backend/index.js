@@ -7,7 +7,7 @@ const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
 const { retrieveAndPush, scrapeAndPush } = require("./pipes");
 const { addClickedTimeToProduct, getProducts } = require("./database/database");
-const { makeBackUp, getAllPosts } = require("./wordpress");
+const { makeBackUp, getAllPosts, deleteAllPosts } = require("./wordpress");
 
 app.use(
   cors({
@@ -61,5 +61,6 @@ app.listen(port, () => {
 // ------> LAUNCHING ACTIONS <------ //
 
 // retrieveAndPush();
-scrapeAndPush();
+// scrapeAndPush();
+// deleteAllPosts();
 // makeBackUp();

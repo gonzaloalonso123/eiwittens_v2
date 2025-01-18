@@ -15,7 +15,7 @@ const getProducts = async () => {
 
 const updateProduct = async (id, data) => {
   console.log(id);
-  if(!id) return;
+  if (!id) return;
   const docRef = Products.doc(id);
   await docRef.update(data);
   const updatedDoc = await docRef.get();
@@ -23,10 +23,10 @@ const updateProduct = async (id, data) => {
 };
 
 const addTimeInTopTenToProduct = async (id) => {
-  //   const docRef = Products.doc(id);
-  //   docRef.update({
-  //     count_top10: admin.firestore.FieldValue.increment(1),
-  //   });
+  const docRef = Products.doc(id);
+  docRef.update({
+    count_top10: FieldValue.arrayUnion(new Date().toISOString()),
+  });
 };
 
 const addClickedTimeToProduct = async (id) => {

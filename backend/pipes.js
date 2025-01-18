@@ -12,16 +12,15 @@ const scrapeAndPush = async () => {
   try {
     const { warnings, newProducts } = await executeAllScrapers();
     if (warnings.length < ALLOWED_WARNINGS) {
-    //   await updateWordPress(newProducts);
-    //   console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
+      //   await updateWordPress(newProducts);
+      //   console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
     } else {
-      console.log(`TOO MANY WARNINGS ${warnings.length}. NOT PUSHING TO WORDPRESS`);
-      sendErrorMail("too many");
+      sendErrorMail(`There are many warnings (${warnings.length})`);
     }
     return newProducts;
   } catch (e) {
     console.log("Error in scrapeAndPush", e);
-    sendErrorMail("catch");
+    sendErrorMail(`catch error in scrapeAndPush: ${e}`);
   }
 };
 
@@ -111,20 +110,6 @@ const addTopTenCounts = (products) => {
 const updateFirebase = async (products) => {
   for (const product of products) {
     await updateProduct(product.id, product);
-  }
-};
-
-const updateWordPress = async (products) => {
-  await deleteAllPosts();
-  for (const product of products) {
-    if (!product.warning && product.enabled) {
-      const productAsAString = toWordpressJson(product);
-      await createPost({
-        title: product.name,
-        content: productAsAString,
-        status: "publish",
-      });
-    }
   }
 };
 
