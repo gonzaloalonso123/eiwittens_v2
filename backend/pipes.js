@@ -52,9 +52,6 @@ const executeAllScrapers = async () => {
 const scrapeAll = async (products) => {
   const scrapedProducts = products;
   for (const product of products) {
-    if (product.type == "creatine") {
-      console.log("scraping creatine", price);
-    }
     if (product.scrape_enabled) {
       const { price } = await performActions(product.scraper, product.url);
       product.price = price;
