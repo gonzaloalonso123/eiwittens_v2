@@ -1,5 +1,6 @@
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
 const getProducts = async () => {
   const productsRef = collection(db, "products");
@@ -93,15 +94,18 @@ const removeDiscountFromAllProductsOfStore = async (store) => {
 
 const migrate = async () => {
   console.log("migrating");
+  doStuff();
+};
+
+const doStuff = async () => {
   const products = await getProducts();
-  const newProducts = products.map((product) => ({
-    ...product,
-	discount_value : product.discount_value === 0 ? null : product.discount_value,
-  }));
-  newProducts.forEach(async (product) => {
-    await updateProduct(product.id, product);
+  products.forEach(async (product) => {
+    if (product.type == "weight-gainer") {
+      await updateProduct(product.id, {
+        type: "weight_gainer",
+      });
+    }
   });
-  console.log(JSON.stringify(newProducts));
 };
 
 export { getProducts, createProduct, deleteProduct, updateProduct, getProductById, applyDiscountToAllProductsOfStore, removeDiscountFromAllProductsOfStore, getBrandDiscounts, migrate };

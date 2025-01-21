@@ -1,6 +1,9 @@
 import { Checkbox } from "antd";
 import { useEffect, useState } from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import { FaChartArea } from "react-icons/fa";
+import { FaChartLine } from "react-icons/fa6";
+import { FaChartBar } from "react-icons/fa";
 
 const CustomTooltip = ({ active, payload, label }) => {
 	if (active && payload && payload.length) {
@@ -22,23 +25,24 @@ const CustomTooltip = ({ active, payload, label }) => {
 export const StackedChart = ({ data, legend }) => {
 	const [displayData, setDisplayData] = useState([]);
 	const [chartType, setChartType] = useState('line');
-	const toggleChartType = () => {
-		if (chartType === 'line') {
-			setChartType('area');
-		} else if (chartType === 'area') {
-			setChartType('bar');
-		} else {
-			setChartType('line');
-		}
-	}
 	useEffect(() => {
 		setDisplayData(data.map(item => ({ ...item })));
 	}, [data]);
 
 	return (
 		<div className="w-full flex">
-			<div className="flex gap-2 flex-col">
-				<button onClick={toggleChartType} className="hover:underline">Change chart [{chartType}]</button>
+			<div className="flex flex-col">
+				<div className="flex gap-4">
+					<button onClick={() => setChartType('line')} className={`flex items-center gap-1 text-sm p-2 rounded-md hover:underline border text-left my-4 ${chartType === 'line' ? 'bg-gray-100' : 'bg-white'}`}>
+						<FaChartLine className="mr-2" /> Line
+					</button>
+					<button onClick={() => setChartType('area')} className={`flex items-center gap-1 text-sm p-2 rounded-md hover:underline border text-left my-4 ${chartType === 'area' ? 'bg-gray-100' : 'bg-white'}`}>
+						<FaChartArea className="mr-2" /> Area
+					</button>
+					<button onClick={() => setChartType('bar')} className={`flex items-center gap-1 text-sm p-2 rounded-md hover:underline border text-left my-4 ${chartType === 'bar' ? 'bg-gray-100' : 'bg-white'}`}>
+						<FaChartBar className="mr-2" /> Bar
+					</button>
+				</div>
 				<HideShowSelector data={data} displayData={displayData} setDisplayData={setDisplayData} legend={legend} />
 			</div>
 			<div className="flex-grow">
@@ -136,7 +140,7 @@ const HideShowSelector = ({ data, displayData, setDisplayData, legend }) => {
 	};
 
 	return (
-		<div className="flex flex-col max-h-72 overflow-auto border rounded-md p-2">
+		<div className="flex flex-col max-h-72 w-64 overflow-auto border rounded-md p-2">
 			{data.length > 0 && legend.map((item, index) => (
 				<div key={index} className="flex items-center gap-2">
 					<Checkbox onChange={() => toggleShow(item.key)} checked={displayData[0]?.[item.key] !== undefined} />

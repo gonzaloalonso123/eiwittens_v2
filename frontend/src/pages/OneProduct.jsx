@@ -24,7 +24,7 @@ import {
 import { LoadingOutlined } from "@ant-design/icons";
 import { LineChart } from "../components/LineChart";
 import { Stats } from "../components/Stats";
-import { formatDate } from "../helpers/helpers";
+import { formatDate, makeCalculations } from "../helpers/helpers";
 import { useToast } from "../providers/Toast";
 import { MdError } from "react-icons/md";
 import { IoDuplicate } from "react-icons/io5";
@@ -147,6 +147,8 @@ const ProductForm = ({ initialValues, submit }) => {
 	const url = Form.useWatch("url", form);
 	const selectedType = Form.useWatch("type", form);
 	const selectedSubtypes = Form.useWatch("subtypes", form);
+	const selectedPrice = Form.useWatch("price", form);
+
 	const submitAndDisable = (values) => {
 		submit(values);
 		setDisabled(true);
@@ -156,6 +158,12 @@ const ProductForm = ({ initialValues, submit }) => {
 			setDisabled(false);
 		}
 	}, [initialValues])
+
+	useEffect(() => {
+		const tempProduct = form.getFieldsValue();
+		makeCalculations(tempProduct);
+		form.setFieldsValue(tempProduct);
+	}, [selectedPrice]);
 
 	return (
 		<>
@@ -178,7 +186,7 @@ const ProductForm = ({ initialValues, submit }) => {
 					<FormTextInput label="Store" name="store" />
 					<FormTextInput label="URL" name="url" />
 					<FormTextInput label="Ammount" name="ammount" />
-					{selectedType == "proteine"
+					{selectedType == "proteine" || selectedType == "weight_gainer"
 						? <FormTextInput label="Protein per 100g" name="protein_per_100g" />
 						: selectedType == "creatine"
 							? <FormTextInput label="Creatine per 100g" name="creatine_per_100g" />
@@ -196,9 +204,10 @@ const ProductForm = ({ initialValues, submit }) => {
 						name="subtypes"
 						label="Subtypes"
 					/>
-					{selectedSubtypes?.includes("weight_gainer") && <FormTextInput label="Sugar per 100g" name="sugar_per_100g" />}
-					{selectedSubtypes?.includes("weight_gainer") && <FormTextInput label="Calories per 100g" name="calories_per_100g" />}
+					{selectedType === "weight_gainer" && <FormTextInput label="Sugar per 100g" name="sugar_per_100g" />}
+					{selectedType === "weight_gainer" && <FormTextInput label="Calories per 100g" name="calories_per_100g" />}
 					<FormTextInput label="Price" name="price" />
+					<AutofieldsDetails form={form} selectedType={selectedType} />
 				</CategorySection>
 				<CategorySection title="Discounts">
 					<FormSelectInput
@@ -277,3 +286,28 @@ const tabItems = [
 	},
 ];
 
+
+
+
+const AutofieldsDetails = ({ form, selectedType }) => {
+	return (<div className="border border-eiwit-blue p-4 rounded-md">
+		{selectedType == "proteine" || selectedType == "weight_gainer" ? (
+			<div className="flex items-center gap-2 justify-between">
+				<p className="font-bold">Price 100g protein</p>
+				<p>{form.getFieldValue("price_for_element_gram")}</p>
+			</div>
+		) : null}
+		{selectedType == "weight_gainer" ? (
+			<div className="flex items-center gap-2 justify-between">
+				<p className="font-bold">Price 100g calories:</p>
+				<p>{form.getFieldValue("price_per_100_calories")}</p>
+			</div>
+		) : null}
+		{selectedType == "creatine" ? (
+			<div className="flex items-center gap-2 justify-between">
+				<p className="font-bold">Price 100g creatine:</p>
+				<p>{form.getFieldValue("price_for_element_gram")}</p>
+			</div >
+		) : null}
+	</div >)
+}

@@ -28,6 +28,7 @@ export const productTypes = [
   { name: "Proteine", value: "proteine" },
   { name: "Preworkout", value: "preworkout" },
   { name: "Creatine", value: "creatine" },
+  { name: "Weight Gainer", value: "weight_gainer" },
   { name: "BCAA", value: "bcaa" },
   { name: "Fat Burner", value: "fatburner" },
   { name: "Vitamin", value: "vitamin" },
@@ -36,7 +37,6 @@ export const productTypes = [
 const proteinTypes = [
   { name: "Whey Proteïne", value: "whey_protein" },
   { name: "Whey Isolate", value: "whey_isolate" },
-  { name: "Weight Gainer", value: "weight_gainer" },
   { name: "Vegan Proteïne", value: "vegan_protein" },
   { name: "Clear whey", value: "clear_whey" },
   { name: "Collageen Eiwit", value: "collagen_protein" },
