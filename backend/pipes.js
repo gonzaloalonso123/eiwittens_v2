@@ -46,7 +46,7 @@ const executeAllScrapers = async () => {
 };
 
 const refreshTrustPilot = async () => {
-  const products = getProducts();
+  const products = await getProducts();
   await addTrustPilotScore(products);
   updateFirebase(products);
 };
@@ -95,7 +95,9 @@ const addTrustPilotScore = async (products) => {
   }
 
   for (const product of products) {
-    product.trustPilotScore = scores[product.trustpilot_url];
+    if (scores[product.trustpilot_url]) {
+      product.trustPilotScore = scores[product.trustpilot_url];
+    }
   }
 };
 
