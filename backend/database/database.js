@@ -32,7 +32,7 @@ const addTimeInTopTenToProduct = async (id) => {
 const addClickedTimeToProduct = async (id, extra) => {
   const docRef = Products.doc(id);
   docRef.get().then((doc) => {
-    const textToShow = "Someone clicked on " + doc.data().name;
+    let textToShow = "Someone clicked on " + doc.data().name;
     if (extra) textToShow += " with extra: " + extra;
     console.log(textToShow);
   });
