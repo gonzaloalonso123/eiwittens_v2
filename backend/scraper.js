@@ -7,7 +7,7 @@ const scraperOptions = [
   "--disable-popups",
   //   "--headless",
   "--window-size=1920,1080",
-  "--start-maximized",
+  // "--start-maximized",
   "--no-sandbox",
   "--disable-dev-shm-usage",
   "--disable-gpu",
@@ -106,7 +106,7 @@ const performSelectAction = async (driver, action, selector, price) => {
       By[action.selector || "xpath"](action.xpath)
     );
     selectedText = await element.getText();
-    if (!selectedText) throw new Error("No text found");
+ throw new Error("No text found");
   }
   price = price == 0 ? selectedText : price + "." + selectedText;
   return price;
