@@ -31,6 +31,7 @@ const addTimeInTopTenToProduct = async (id) => {
 
 const addClickedTimeToProduct = async (id, extra) => {
   const docRef = Products.doc(id);
+  console.log(typeof extra);
   docRef.get().then((doc) => {
     let textToShow = "Someone clicked on " + doc.data().name;
     if (extra) textToShow += " with extra: " + extra;
