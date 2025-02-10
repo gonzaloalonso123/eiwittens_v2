@@ -9,7 +9,7 @@ const useStatus = () => {
       setStatus(status);
     });
   }, []);
-//   migrate();
+  // migrate();
   return status;
 };
 

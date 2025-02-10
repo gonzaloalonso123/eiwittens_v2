@@ -1,4 +1,14 @@
-import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  deleteField,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "./firebase";
 import { collapseTextChangeRangesAcrossMultipleVersions } from "typescript";
 
@@ -46,6 +56,7 @@ const updateProduct = async (id, product) => {
   await updateDoc(productRef, product).catch((error) => {
     console.error("Error updating document: ", error);
   });
+  console.log("Document successfully updated!", id);
 };
 
 const getProductById = async (id) => {
@@ -57,7 +68,12 @@ const getProductById = async (id) => {
   return null;
 };
 
-const applyDiscountToAllProductsOfStore = async (store, discount_type, discount_value, discount_code) => {
+const applyDiscountToAllProductsOfStore = async (
+  store,
+  discount_type,
+  discount_value,
+  discount_code
+) => {
   const products = await getProducts();
   products.forEach(async (product) => {
     if (product.store === store) {
@@ -99,13 +115,26 @@ const migrate = async () => {
 
 const doStuff = async () => {
   const products = await getProducts();
-  products.forEach(async (product) => {
-    if (product.type == "weight-gainer") {
-      await updateProduct(product.id, {
-        type: "weight_gainer",
-      });
-    }
+  console.log(JSON.stringify(products));
+  products = products.forEach((product) => {
+    updateProduct(product.id, {
+      count_clicked: product.count_clicked?.map((click) => {
+        return {
+          date: click.date || click,
+        };
+      }) || [],
+    });
   });
 };
 
-export { getProducts, createProduct, deleteProduct, updateProduct, getProductById, applyDiscountToAllProductsOfStore, removeDiscountFromAllProductsOfStore, getBrandDiscounts, migrate };
+export {
+  getProducts,
+  createProduct,
+  deleteProduct,
+  updateProduct,
+  getProductById,
+  applyDiscountToAllProductsOfStore,
+  removeDiscountFromAllProductsOfStore,
+  getBrandDiscounts,
+  migrate,
+};
