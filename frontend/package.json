@@ -13,7 +13,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
-    "firebase": "^10.14.0",
+    "firebase": "^10.14.1",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -31,7 +31,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-	"full-build"  : "git add . && git commit -m 'build' && git push && npm run build && firebase deploy",
+    "full-build": "git add . && git commit -m 'build' && git push && npm run build && firebase deploy",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

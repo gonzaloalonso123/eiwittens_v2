@@ -6,6 +6,7 @@ import { GrGraphQl } from "react-icons/gr";
 import { MdAutoGraph } from "react-icons/md";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import rogier from "../assets/images/rogier.webp";
 const { RangePicker } = DatePicker;
 
 const prepareByProduct = (products, range) => {
@@ -155,7 +156,10 @@ const RogiersChoiceClicks = ({ products }) => {
   return (
     <div>
       <h1 className="text-2xl my-5 font-semibold">Rogiers choice clicks</h1>
-      <span className="text-3xl p-2 shadow-md">{count}</span>
+      <div className="flex gap-2">
+        <span className="text-3xl p-2 shadow-md">{count}</span>
+        <img src={rogier} className="w-20" />
+      </div>
     </div>
   );
 };
