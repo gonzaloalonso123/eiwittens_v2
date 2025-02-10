@@ -103,6 +103,7 @@ const performSelectAction = async (driver, action, selector, price) => {
     console.log(action);
     const element = await driver.findElement(By[selector](action.xpath));
     selectedText = await element.getText();
+    console.log('got price', selectedText);
   }
   price = price == 0 ? selectedText : price + "." + selectedText;
   return price;
