@@ -42,6 +42,8 @@ const addClickedTimeToProduct = async (id, extra) => {
   if (extra) {
     newClick.rogier_choice = true;
   }
+
+  console.log("saving a new click", newClick);
   docRef.update({
     count_clicked: FieldValue.arrayUnion(newClick),
   });
