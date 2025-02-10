@@ -100,6 +100,7 @@ const performSelectAction = async (driver, action, selector, price) => {
       parentElement
     );
   } else {
+    console.log(action);
     const element = await driver.findElement(By[selector](action.xpath));
     selectedText = await element.getText();
   }
