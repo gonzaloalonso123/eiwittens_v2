@@ -138,7 +138,7 @@ export const ProductsGeneralAnaltyics = () => {
           <h1 className="text-2xl my-5 font-semibold">Click distribution</h1>
           <ClickDistributionChart data={pieData} />
         </div>
-        <RogiersChoiceClicks data={data} />
+        <RogiersChoiceClicks products={products} />
       </div>
     </div>
   );
