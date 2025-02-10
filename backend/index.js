@@ -51,7 +51,7 @@ app.get("/posts", async (req, res) => {
 
 app.post("/product-clicked/:id", async (req, res) => {
   const id = req.params.id;
-  const extra = req.params.extra;
+  const extra = req.query.extra;
   await addClickedTimeToProduct(id, extra);
   res.status(200).send("ok");
 });
