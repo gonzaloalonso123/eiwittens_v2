@@ -1,11 +1,11 @@
 const { Builder, By, until, Select } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
 
 const scraperOptions = [
   "--disable-popups",
-//   "--headless",
+  //   "--headless",
   "--window-size=1920,1080",
   "--start-maximized",
   "--no-sandbox",
@@ -34,7 +34,9 @@ const performActions = async (actions, url) => {
       .setChromeOptions(options)
       .build();
 
-	await driver.executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});");
+    await driver.executeScript(
+      "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
+    );
 
     await driver.get(url);
 
@@ -50,8 +52,8 @@ const performActions = async (actions, url) => {
     error.index = index;
     price = 0;
     try {
-	  const screenshotBase64 = await takeScreenshot(driver);
-	  error.screenshot = screenshotBase64;
+      const screenshotBase64 = await takeScreenshot(driver);
+      error.screenshot = screenshotBase64;
     } catch (e) {
       console.log("error taking screenshot", e);
     }
@@ -100,17 +102,18 @@ const performSelectAction = async (driver, action, selector, price) => {
       parentElement
     );
   } else {
-    console.log(action);
-    const element = await driver.findElement(By[action.selector || 'xpath'](action.xpath));
+    const element = await driver.findElement(
+      By[action.selector || "xpath"](action.xpath)
+    );
+    console.log("element", element);
     selectedText = await element.getText();
-    console.log('got price', selectedText);
   }
   price = price == 0 ? selectedText : price + "." + selectedText;
   return price;
 };
 
 const takeScreenshot = async (driver, filePath) => {
-	return await driver.takeScreenshot();
+  return await driver.takeScreenshot();
 };
 
 const cleanPrice = (price) => {
