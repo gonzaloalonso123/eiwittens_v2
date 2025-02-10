@@ -71,5 +71,5 @@ app.listen(port, () => {
 // retrieveAndPush();
 // scrapeAndPush();
 // deleteAllPosts();
-refreshTrustPilot();
+// refreshTrustPilot();
 // makeBackUp();
