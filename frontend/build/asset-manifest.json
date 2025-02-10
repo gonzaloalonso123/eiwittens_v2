@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/static/css/main.2429de82.css",
-    "main.js": "/static/js/main.c81aab4f.js",
+    "main.js": "/static/js/main.fa6057ab.js",
     "static/media/hacker_vulture.png": "/static/media/hacker_vulture.44c6dff59f29d2b6a653.png",
     "static/media/rogier.webp": "/static/media/rogier.d263a7c56867feb3ce8a.webp",
     "static/media/logo.webp": "/static/media/logo.ffacc9b3c57f6eecb7f1.webp",
     "index.html": "/index.html",
     "main.2429de82.css.map": "/static/css/main.2429de82.css.map",
-    "main.c81aab4f.js.map": "/static/js/main.c81aab4f.js.map"
+    "main.fa6057ab.js.map": "/static/js/main.fa6057ab.js.map"
   },
   "entrypoints": [
     "static/css/main.2429de82.css",
-    "static/js/main.c81aab4f.js"
+    "static/js/main.fa6057ab.js"
   ]
 }

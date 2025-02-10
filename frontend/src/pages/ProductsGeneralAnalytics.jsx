@@ -13,7 +13,7 @@ const prepareByProduct = (products, range) => {
   const { start, end } = range;
   const data = [];
   let currentDate = new Date(start);
-  while (currentDate <= end) {
+  while (currentDate >= end) {
     const productClicks = {};
     products.forEach((product) => {
       const clicks = product.count_clicked?.filter(
@@ -34,7 +34,7 @@ const prepareByAllProducts = (products, range) => {
   console.log(start, end);
   const currentDate = new Date(start);
   const data = [];
-  while (currentDate <= end) {
+  while (currentDate >= end) {
     const clicks = products.reduce((acc, p) => {
       return (
         acc +
