@@ -133,9 +133,13 @@ export const ProductsGeneralAnaltyics = () => {
       <InfoSelector setter={setInfoType} selectedOption={infoType} />
       <DateSelector setter={setDateRange} range={dateRange} />
       <StackedChart data={data} legend={legend} />
-      <h1 className="text-2xl my-5 font-semibold">Click distribution</h1>
-      <ClickDistributionChart data={pieData} />
-      <RogiersChoiceClicks data={data} />
+      <div className="flex gap-10 items-start">
+        <div>
+          <h1 className="text-2xl my-5 font-semibold">Click distribution</h1>
+          <ClickDistributionChart data={pieData} />
+        </div>
+        <RogiersChoiceClicks data={data} />
+      </div>
     </div>
   );
 };
@@ -156,9 +160,9 @@ const RogiersChoiceClicks = ({ products }) => {
   return (
     <div>
       <h1 className="text-2xl my-5 font-semibold">Rogiers choice clicks</h1>
-      <div className="flex gap-2">
-        <span className="text-3xl p-2 shadow-md">{count}</span>
-        <img src={rogier} className="w-20" />
+      <div className="flex gap-2 items-end">
+        <span className="text-6xl p-2 shadow-md h-fit">{count}</span>
+        <img src={rogier} className="w-24" />
       </div>
     </div>
   );
