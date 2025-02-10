@@ -5,14 +5,23 @@ const app = express();
 const cors = require("cors");
 const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
-const { retrieveAndPush, scrapeAndPush, refreshTrustPilot } = require("./pipes");
+const {
+  retrieveAndPush,
+  scrapeAndPush,
+  refreshTrustPilot,
+} = require("./pipes");
 const { addClickedTimeToProduct, getProducts } = require("./database/database");
 const { makeBackUp, getAllPosts, deleteAllPosts } = require("./wordpress");
 const { createBackupFile } = require("./backup");
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://eiwittens.web.app", "https://gieriggroeien.nl", "http://localhost:3001"],
+    origin: [
+      "http://localhost:3000",
+      "https://eiwittens.web.app",
+      "https://gieriggroeien.nl",
+      "http://localhost:3001",
+    ],
   })
 );
 app.use(express.json());
@@ -42,7 +51,8 @@ app.get("/posts", async (req, res) => {
 
 app.post("/product-clicked/:id", async (req, res) => {
   const id = req.params.id;
-  await addClickedTimeToProduct(id);
+  const extra = req.params.extra;
+  await addClickedTimeToProduct(id, extra);
   res.status(200).send("ok");
 });
 

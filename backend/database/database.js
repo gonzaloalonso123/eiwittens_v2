@@ -8,7 +8,7 @@ const getProducts = async () => {
   const querySnapshot = await Products.get();
   const data = [];
   querySnapshot.forEach((doc) => {
-    data.push({...doc.data(), id: doc.id});
+    data.push({ ...doc.data(), id: doc.id });
   });
   return data;
 };
@@ -29,13 +29,23 @@ const addTimeInTopTenToProduct = async (id) => {
   });
 };
 
-const addClickedTimeToProduct = async (id) => {
+const addClickedTimeToProduct = async (id, extra) => {
   const docRef = Products.doc(id);
   docRef.get().then((doc) => {
-    console.log("Someone clicked on", doc.data().name);
+    const textToShow =
+      "Someone clicked on " + doc.data().name + extra
+        ? " with extra: " + extra
+        : "";
+    console.log(textToShow);
   });
+  const newClick = {
+    date: new Date().toISOString(),
+  };
+  if (extra) {
+    newClick.rogier_choice = true;
+  }
   docRef.update({
-    count_clicked: FieldValue.arrayUnion(new Date().toISOString()),
+    count_clicked: FieldValue.arrayUnion(newClick),
   });
 };
 
