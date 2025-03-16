@@ -17,6 +17,7 @@ const { createBackupFile } = require("./backup");
 app.use(
   cors({
     origin: [
+      "https://dashboard.gieriggroeien.nl",
       "http://localhost:3000",
       "https://eiwittens.web.app",
       "https://gieriggroeien.nl",
@@ -69,7 +70,7 @@ app.listen(port, () => {
 // ------> LAUNCHING ACTIONS <------ //
 
 // retrieveAndPush();
-// scrapeAndPush();
+scrapeAndPush();
 // deleteAllPosts();
 // refreshTrustPilot();
 // makeBackUp();
