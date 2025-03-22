@@ -5,7 +5,7 @@ import { JSDOM } from "jsdom";
 import { v4 as uuidv4 } from "uuid";
 import { configDotenv } from "dotenv";
 
-const DEFAULT_TIMEOUT = 5000;
+const DEFAULT_TIMEOUT = 1000;
 const RETRY_ATTEMPTS = 3;
 const scraperOptions = [
   "--disable-popups",
