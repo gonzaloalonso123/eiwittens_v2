@@ -60,9 +60,14 @@ const scrapeAll = async (products) => {
   for (let i = 0; i < products.length; i++) {
     const product = products[i];
     if (product.scrape_enabled) {
-      const { price } = await performActions(product.scraper, product.url, {
-        cookieBannerXPaths: product.cookieBannerXPaths,
-      });
+      const { price } = await performActions(
+        product.scraper,
+        product.url,
+        {
+          cookieBannerXPaths: product.cookieBannerXPaths,
+        },
+        "disabled"
+      );
       scrapedProducts[i].price = price;
     }
   }

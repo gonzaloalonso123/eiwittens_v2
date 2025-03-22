@@ -40,6 +40,8 @@ const addClickedTimeToProduct = async (id, extra) => {
   const newClick = {
     date: new Date().toISOString(),
   };
+
+  console.log("extra", extra);
   if (extra) {
     newClick.rogier_choice = true;
   }

@@ -1,6 +1,9 @@
 import { Builder, By, until, Select } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
-import { attemptAIPriceExtraction } from "./ia-scraping.js";
+import OpenAI from "openai";
+import { JSDOM } from "jsdom";
+import { v4 as uuidv4 } from "uuid";
+import { configDotenv } from "dotenv";
 
 const DEFAULT_TIMEOUT = 1000;
 const RETRY_ATTEMPTS = 3;
@@ -20,53 +23,40 @@ const defaultCookieBannerXPaths = [
   "//button[contains(@class, 'cookie-accept')]",
   "//button[contains(@id, 'onetrust-accept-btn-handler')]",
   "//button[contains(@id, 'CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll')]",
+  "//*[@id='onetrust-accept-btn-handler']",
+  "//*[@id='CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll']",
 ];
 
-export const performActions = async (actions, url, config = {}) => {
+export const performActions = async (
+  actions,
+  url,
+  config = {},
+  aiMode = "disabled"
+) => {
   let driver;
   let price = 0;
-  const error = { text: "", index: -1, screenshot: null };
+  let error = { text: "", index: -1, screenshot: null };
   let index = 0;
-  const {
-    cookieBannerXPaths = [
-      ...defaultCookieBannerXPaths,
-      ...config.cookieBannerXPaths,
-    ],
-    timeout = DEFAULT_TIMEOUT,
-  } = config;
+  const { cookieBannerXPaths, timeout = DEFAULT_TIMEOUT } = config;
+
+  const allCookieBanners = [
+    ...cookieBannerXPaths,
+    ...defaultCookieBannerXPaths,
+  ];
 
   try {
     console.log("Performing actions on ->", url);
-    const options = new chrome.Options();
-    options.addArguments(...scraperOptions);
-
-    driver = await new Builder()
-      .forBrowser("chrome")
-      .setChromeOptions(options)
-      .build();
-
-    await driver.executeScript(
-      "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
-    );
-
+    driver = await initializeDriver();
     await driver.get(url);
-    await handleCookieBanner(driver, cookieBannerXPaths, timeout);
-    for (const action of actions) {
-      const selector = action.selector || "xpath";
-      price = await performActionWithRetry(
-        driver,
-        action,
-        selector,
-        price,
-        timeout
-      );
-      index++;
+    await handleCookieBanner(driver, allCookieBanners, timeout);
+    if (aiMode !== "prefered") {
+      price = await performRegularActions(driver, actions, timeout);
     }
 
     console.log(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
-    if (cleanPrice(price) === 0) {
+    if (cleanPrice(price) === 0 && aiMode !== "disabled") {
       console.log(
-        "Regular scraping failed to extract price. Attempting AI-powered extraction..."
+        "Regular scraping failed. Attempting AI-powered extraction..."
       );
       const aiResult = await attemptAIPriceExtraction(driver, url);
 
@@ -78,7 +68,6 @@ export const performActions = async (actions, url, config = {}) => {
         };
       }
     }
-
     return {
       price: cleanPrice(price),
       error,
@@ -89,7 +78,6 @@ export const performActions = async (actions, url, config = {}) => {
     error.text = e.toString();
     error.index = index;
     price = 0;
-
     try {
       error.screenshot = await takeScreenshot(driver);
       console.log(
@@ -100,14 +88,13 @@ export const performActions = async (actions, url, config = {}) => {
       if (aiResult.price > 0) {
         return {
           price: aiResult.price,
-          error: { text: "", index: -1, screenshot: null },
+          error,
           generatedActions: aiResult.actions,
         };
       }
     } catch (screenshotError) {
       console.error("Error taking screenshot", screenshotError);
     }
-
     return {
       price: 0,
       error,
@@ -116,6 +103,34 @@ export const performActions = async (actions, url, config = {}) => {
   } finally {
     await driver?.quit();
   }
+};
+
+const initializeDriver = async () => {
+  const options = new chrome.Options();
+  options.addArguments(...scraperOptions);
+  const driver = await new Builder()
+    .forBrowser("chrome")
+    .setChromeOptions(options)
+    .build();
+  await driver.executeScript(
+    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
+  );
+  return driver;
+};
+
+const performRegularActions = async (driver, actions, timeout) => {
+  let price = 0;
+  for (const action of actions) {
+    const selector = action.selector || "xpath";
+    price = await performActionWithRetry(
+      driver,
+      action,
+      selector,
+      price,
+      timeout
+    );
+  }
+  return price;
 };
 
 const handleCookieBanner = async (driver, xpaths, timeout) => {
@@ -238,6 +253,109 @@ const cleanPrice = (price) => {
       .replace(/[^0-9.]/g, "")
   );
   return isNaN(final) ? 0 : final;
+};
+
+const openai = new OpenAI({
+  apiKey: configDotenv().parsed.OPENAI_API_KEY,
+});
+
+const getPageHTML = async (driver) => {
+  return await driver.executeScript(
+    "return document.documentElement.outerHTML"
+  );
+};
+
+const cleanHTML = (html) => {
+  const dom = new JSDOM(html);
+  const document = dom.window.document;
+  const elementsToRemove = document.querySelectorAll(
+    "script, style, iframe, img, svg, link, meta, noscript, footer"
+  );
+  elementsToRemove.forEach((element) => element.remove());
+  return document.body.innerHTML;
+};
+
+const sendToOpenAI = async (html) => {
+  const prompt = `Analyze this HTML and identify the product price. Return the price and how to select the element with selenium. Use the most reliable option for this case (xpath or css selector). Return a JSON with: price (string), selectorType (string: "xpath" or "css"), and selector (string).`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert in web scraping and HTML analysis. Your task is to identify product prices and create reliable selectors for them.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+        {
+          role: "user",
+          content: html,
+        },
+      ],
+      response_format: {
+        type: "json_object",
+      },
+    });
+
+    console.log("OpenAI usage:", completion.usage);
+    const content = completion.choices[0].message.content;
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Error calling OpenAI:", error);
+    throw error;
+  }
+};
+
+export const attemptAIPriceExtraction = async (driver, url) => {
+  try {
+    const html = await getPageHTML(driver);
+    const cleanedHTML = cleanHTML(html);
+    const aiResponse = await sendToOpenAI(cleanedHTML);
+    const { price, selectorType, selector } = aiResponse;
+
+    console.log(aiResponse);
+
+    try {
+      const element = await driver.findElement(
+        By[selectorType || "xpath"](selector)
+      );
+      const extractedText = await element.getText();
+      const extractedPrice = cleanPrice(extractedText);
+      const actions = [
+        {
+          id: uuidv4(),
+          type: "select",
+          selector: selectorType || "xpath",
+          xpath: selector,
+        },
+      ];
+
+      return {
+        price: extractedPrice > 0 ? extractedPrice : cleanPrice(price),
+        actions: actions,
+      };
+    } catch (error) {
+      console.error("Error verifying AI-extracted price:", error);
+      return {
+        price: cleanPrice(price),
+        actions: [
+          {
+            id: uuidv4(),
+            type: "select",
+            selector: selectorType || "xpath",
+            xpath: selector,
+          },
+        ],
+      };
+    }
+  } catch (error) {
+    console.error("Error in AI price extraction:", error);
+    return { price: 0, actions: [] };
+  }
 };
 
 export default {

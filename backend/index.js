@@ -32,9 +32,22 @@ app.post("/test-scraper", async (req, res) => {
   const { price, error, generatedActions } = await performActions(
     req.body.actions,
     req.body.url,
-    { cookieBannerXPaths: req.body.cookieBannerXPaths }
+    { cookieBannerXPaths: req.body.cookieBannerXPaths },
+    "enabled"
   );
   res.json({ price, error, generatedActions });
+});
+
+app.post("/test-ai", async (req, res) => {
+  const result = await performActions(
+    null,
+    req.body.url,
+    {
+      cookieBannerXPaths: req.body.cookieBannerXPaths,
+    },
+    "prefered"
+  );
+  res.json(result);
 });
 
 app.post("/status", async (req, res) => {
