@@ -31,22 +31,12 @@ const addTimeInTopTenToProduct = async (id) => {
 
 const addClickedTimeToProduct = async (id, extra) => {
   const docRef = Products.doc(id);
-  console.log(typeof extra);
-  docRef.get().then((doc) => {
-    let textToShow = "Someone clicked on " + doc.data().name;
-    if (extra) textToShow += " with extra: " + extra;
-    console.log(textToShow);
-  });
   const newClick = {
     date: new Date().toISOString(),
   };
-
-  console.log("extra", extra);
   if (extra) {
-    newClick.rogier_choice = true;
+    newClick[extra] = true;
   }
-
-  console.log("saving a new click", newClick);
   docRef.update({
     count_clicked: FieldValue.arrayUnion(newClick),
   });
