@@ -17,6 +17,13 @@ const scraperOptions = [
   "--remote-debugging-port=9230",
   "--disable-search-engine-choice-screen",
 ];
+const defaultCookieBannerXPaths = [
+  "//button[contains(text(), 'Accept')]",
+  "//button[contains(text(), 'Accept All')]",
+  "//button[contains(@class, 'cookie-accept')]",
+  "//button[contains(@id, 'onetrust-accept-btn-handler')]",
+  "//button[contains(@id, 'CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll')]",
+];
 
 const openai = new OpenAI({
   apiKey: configDotenv().parsed.OPENAI_API_KEY,
@@ -27,7 +34,13 @@ export const performActions = async (actions, url, config = {}) => {
   let price = 0;
   const error = { text: "", index: -1, screenshot: null };
   let index = 0;
-  const { cookieBannerXPaths = [], timeout = DEFAULT_TIMEOUT } = config;
+  const {
+    cookieBannerXPaths = [
+      ...defaultCookieBannerXPaths,
+      ...config.cookieBannerXPaths,
+    ],
+    timeout = DEFAULT_TIMEOUT,
+  } = config;
 
   try {
     console.log("Performing actions on ->", url);
