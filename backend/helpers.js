@@ -10,10 +10,16 @@ const getElementToBeCompared = (product) => {
 };
 const makeCalculations = (product) => {
   const elementToBeCompared = getElementToBeCompared(product);
-  const price_for_element_gram = getPriceByAHundredGrams(product, elementToBeCompared);
+  const price_for_element_gram = getPriceByAHundredGrams(
+    product,
+    elementToBeCompared
+  );
   product.price_for_element_gram = price_for_element_gram;
   if (product.type == "weight_gainer") {
-    product.price_per_100_calories = getPriceByAHundredGrams(product, product.calories_per_100g);
+    product.price_per_100_calories = getPriceByAHundredGrams(
+      product,
+      product.calories_per_100g
+    );
   }
 };
 
@@ -26,7 +32,8 @@ const getPriceByAHundredGrams = (product, element) => {
 const applyDiscount = (product) => {
   if (product.discount_value) {
     if (product.discount_type === "percentage") {
-      product.price = product.price - product.price * (product.discount_value / 100);
+      product.price =
+        product.price - product.price * (product.discount_value / 100);
     } else {
       product.price = product.price - product.discount_value;
     }
@@ -46,7 +53,8 @@ const getTrustPilotScore = async (url) => {
         type: "select",
       },
     ],
-    "https://www.trustpilot.com/review/" + url
+    "https://www.trustpilot.com/review/" + url,
+    {}
   );
   return trustpilot_score;
 };

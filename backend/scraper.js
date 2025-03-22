@@ -3,11 +3,11 @@ const chrome = require("selenium-webdriver/chrome");
 const path = require("path");
 const fs = require("fs");
 
+const DEFAULT_TIMEOUT = 5000;
+const RETRY_ATTEMPTS = 3;
 const scraperOptions = [
   "--disable-popups",
-  //   "--headless",
   "--window-size=1920,1080",
-  // "--start-maximized",
   "--no-sandbox",
   "--disable-dev-shm-usage",
   "--disable-gpu",
@@ -16,14 +16,13 @@ const scraperOptions = [
   "--disable-search-engine-choice-screen",
 ];
 
-const performActions = async (actions, url) => {
+const performActions = async (actions, url, config = {}) => {
   let driver;
   let price = 0;
-  let error = {
-    text: "",
-    index: -1,
-  };
+  let error = { text: "", index: -1, screenshot: null };
   let index = 0;
+  const { cookieBannerXPaths = [], timeout = DEFAULT_TIMEOUT } = config;
+
   try {
     console.log("Performing actions on ->", url);
     let options = new chrome.Options();
@@ -40,22 +39,29 @@ const performActions = async (actions, url) => {
 
     await driver.get(url);
 
+    await handleCookieBanner(driver, cookieBannerXPaths, timeout);
+
     for (const action of actions) {
       const selector = action.selector || "xpath";
-      price = await performAction(driver, action, selector, price);
+      price = await performActionWithRetry(
+        driver,
+        action,
+        selector,
+        price,
+        timeout
+      );
       index++;
     }
     console.log(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
   } catch (e) {
-    console.log("[ERROR EXECUTING ACTION]");
+    console.error("[ERROR EXECUTING ACTION]", e);
     error.text = e.toString();
     error.index = index;
     price = 0;
     try {
-      const screenshotBase64 = await takeScreenshot(driver);
-      error.screenshot = screenshotBase64;
-    } catch (e) {
-      console.log("error taking screenshot", e);
+      error.screenshot = await takeScreenshot(driver);
+    } catch (screenshotError) {
+      console.error("Error taking screenshot", screenshotError);
     }
   } finally {
     await driver?.quit();
@@ -63,32 +69,93 @@ const performActions = async (actions, url) => {
   }
 };
 
-const performAction = async (driver, action, selector, price) => {
-  if (action.type === "click") {
-    await performClickAction(driver, action, selector);
-  } else if (action.type === "selectOption") {
-    await performSelectOptionAction(driver, action, selector);
-  } else if (action.type === "select") {
-    price = await performSelectAction(driver, action, selector, price);
-  } else if (action.type === "wait") {
-    await driver.sleep(2000);
+const handleCookieBanner = async (driver, xpaths, timeout) => {
+  for (const xpath of xpaths) {
+    try {
+      const element = await driver.wait(
+        until.elementLocated(By.xpath(xpath)),
+        timeout / 2
+      );
+      if (await element.isDisplayed()) {
+        await element.click();
+        await driver.sleep(1000); // Give time for banner to disappear
+        console.log("Cookie banner handled");
+        return;
+      }
+    } catch (e) {
+      console.log("No cookie banner found with xpath:", xpath);
+    }
   }
-  return price;
 };
 
-const performClickAction = async (driver, action, selector) => {
-  await driver.wait(until.elementLocated(By[selector](action.xpath)), 4000);
-  await driver.findElement(By[selector](action.xpath)).click();
+const performActionWithRetry = async (
+  driver,
+  action,
+  selector,
+  price,
+  timeout
+) => {
+  for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt++) {
+    try {
+      if (action.type === "click") {
+        await performClickAction(driver, action, selector, timeout);
+      } else if (action.type === "selectOption") {
+        await performSelectOptionAction(driver, action, selector, timeout);
+      } else if (action.type === "select") {
+        price = await performSelectAction(
+          driver,
+          action,
+          selector,
+          price,
+          timeout
+        );
+      } else if (action.type === "wait") {
+        await driver.sleep(action.duration || 2000);
+      }
+      return price;
+    } catch (e) {
+      console.warn(
+        `Attempt ${attempt} failed for action: ${action.type}`,
+        e.message
+      );
+      if (attempt === RETRY_ATTEMPTS) throw e;
+      await driver.sleep(1000 * attempt); // Exponential backoff
+    }
+  }
 };
 
-const performSelectOptionAction = async (driver, action, selector) => {
-  const selectElement = await driver.findElement(By[selector](action.xpath));
-  const select = new Select(selectElement);
+const performClickAction = async (driver, action, selector, timeout) => {
+  const element = await driver.wait(
+    until.elementLocated(By[selector](action.xpath)),
+    timeout
+  );
+  await driver.wait(until.elementIsVisible(element), timeout);
+  await driver.executeScript("arguments[0].scrollIntoView(true);", element);
+  await element.click();
+};
+
+const performSelectOptionAction = async (driver, action, selector, timeout) => {
+  const element = await driver.wait(
+    until.elementLocated(By[selector](action.xpath)),
+    timeout
+  );
+  const select = new Select(element);
   await select.selectByVisibleText(action.optionText);
 };
 
-const performSelectAction = async (driver, action, selector, price) => {
+const performSelectAction = async (
+  driver,
+  action,
+  selector,
+  price,
+  timeout
+) => {
   let selectedText = null;
+  const element = await driver.wait(
+    until.elementLocated(By[selector](action.xpath)),
+    timeout
+  );
+
   if (action.xpath.endsWith("/text()")) {
     let parentXPath = action.xpath.replace("/text()", "");
     let parentElement = await driver.findElement(By[selector](parentXPath));
@@ -98,37 +165,30 @@ const performSelectAction = async (driver, action, selector, price) => {
         .filter(node => node.nodeType === Node.TEXT_NODE)
         .map(node => node.textContent.trim())
         .join("");
-        `,
+      `,
       parentElement
     );
   } else {
-    const element = await driver.findElement(
-      By[action.selector || "xpath"](action.xpath)
-    );
     selectedText = await element.getText();
   }
-  price = price == 0 ? selectedText : price + "." + selectedText;
+  price = price === 0 ? selectedText : price + "." + selectedText;
   return price;
 };
 
-const takeScreenshot = async (driver, filePath) => {
+const takeScreenshot = async (driver) => {
   return await driver.takeScreenshot();
 };
 
 const cleanPrice = (price) => {
-  price += "";
+  price = String(price);
   const final = parseFloat(
     price
-      .replace("€", "")
+      .replace(/[€£$]/g, "")
       .replace(",", ".")
       .replace(" ", "")
       .replace(/[^0-9.]/g, "")
   );
-
-  if (isNaN(final)) {
-    return 0;
-  }
-  return final;
+  return isNaN(final) ? 0 : final;
 };
 
 module.exports = { performActions };

@@ -1,6 +1,10 @@
 const { getProducts, updateProduct } = require("./database/database");
 const { sendMail, sendErrorMail } = require("./email");
-const { applyDiscount, getTrustPilotScore, makeCalculations } = require("./helpers");
+const {
+  applyDiscount,
+  getTrustPilotScore,
+  makeCalculations,
+} = require("./helpers");
 const { performActions } = require("./scraper");
 
 const ALLOWED_WARNINGS = 15;
@@ -56,7 +60,9 @@ const scrapeAll = async (products) => {
   for (let i = 0; i < products.length; i++) {
     const product = products[i];
     if (product.scrape_enabled) {
-      const { price } = await performActions(product.scraper, product.url);
+      const { price } = await performActions(product.scraper, product.url, {
+        cookieBannerXPaths: product.cookieBannerXPaths,
+      });
       scrapedProducts[i].price = price;
     }
   }
@@ -65,7 +71,11 @@ const scrapeAll = async (products) => {
 
 const addWarnings = (products) => {
   for (const product of products) {
-    if (product.price === 0 || !product.ammount || (!product.protein_per_100g && !product.creatine_per_100g)) {
+    if (
+      product.price === 0 ||
+      !product.ammount ||
+      (!product.protein_per_100g && !product.creatine_per_100g)
+    ) {
       product.warning = true;
     } else {
       product.warning = false;
@@ -90,7 +100,9 @@ const addTrustPilotScore = async (products) => {
 
   for (const product of products) {
     if (product.trustpilot_url && !scores[product.trustpilot_url]) {
-      scores[product.trustpilot_url] = await getTrustPilotScore(product.trustpilot_url);
+      scores[product.trustpilot_url] = await getTrustPilotScore(
+        product.trustpilot_url
+      );
     }
   }
 

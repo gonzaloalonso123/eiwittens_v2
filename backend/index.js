@@ -1,17 +1,10 @@
-//express
-
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
-const {
-  retrieveAndPush,
-  scrapeAndPush,
-  refreshTrustPilot,
-} = require("./pipes");
+const { scrapeAndPush, refreshTrustPilot } = require("./pipes");
 const { addClickedTimeToProduct, getProducts } = require("./database/database");
-const { makeBackUp, getAllPosts, deleteAllPosts } = require("./wordpress");
 const { createBackupFile } = require("./backup");
 
 app.use(
@@ -33,7 +26,11 @@ app.post("/scrape-all", async (req, res) => {
 });
 
 app.post("/test-scraper", async (req, res) => {
-  const { price, error } = await performActions(req.body.actions, req.body.url);
+  const { price, error } = await performActions(
+    req.body.actions,
+    req.body.url,
+    { cookieBannerXPaths: req.body.cookieBannerXPaths }
+  );
   res.json({ price, error });
 });
 
