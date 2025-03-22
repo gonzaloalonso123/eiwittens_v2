@@ -77,12 +77,8 @@ const performAction = async (driver, action, selector, price) => {
 };
 
 const performClickAction = async (driver, action, selector) => {
-  try {
-    await driver.wait(until.elementLocated(By[selector](action.xpath)), 4000);
-    await driver.findElement(By[selector](action.xpath)).click();
-  } catch (e) {
-    console.log("Error clicking", e);
-  }
+  await driver.wait(until.elementLocated(By[selector](action.xpath)), 4000);
+  await driver.findElement(By[selector](action.xpath)).click();
 };
 
 const performSelectOptionAction = async (driver, action, selector) => {
