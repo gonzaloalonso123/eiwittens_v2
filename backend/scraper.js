@@ -130,7 +130,7 @@ const performClickAction = async (driver, action, selector, timeout) => {
     timeout
   );
   await driver.wait(until.elementIsVisible(element), timeout);
-  await driver.executeScript("arguments[0].scrollIntoView(true);", element);
+  // await driver.executeScript("arguments[0].scrollIntoView(true);", element);
   await element.click();
 };
 
