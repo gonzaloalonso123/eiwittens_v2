@@ -26,12 +26,12 @@ app.post("/scrape-all", async (req, res) => {
 });
 
 app.post("/test-scraper", async (req, res) => {
-  const { price, error } = await performActions(
+  const { price, error, generatedActions } = await performActions(
     req.body.actions,
     req.body.url,
     { cookieBannerXPaths: req.body.cookieBannerXPaths }
   );
-  res.json({ price, error });
+  res.json({ price, error, generatedActions });
 });
 
 app.post("/status", async (req, res) => {
