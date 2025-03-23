@@ -37,7 +37,7 @@ export const performActions = async (
   let price = 0;
   let error = { text: "", index: -1, screenshot: null };
   let index = 0;
-  const { cookieBannerXPaths, timeout = DEFAULT_TIMEOUT } = config;
+  const { cookieBannerXPaths = [], timeout = DEFAULT_TIMEOUT } = config;
 
   const allCookieBanners = [
     ...cookieBannerXPaths,
@@ -80,12 +80,11 @@ export const performActions = async (
     price = 0;
     try {
       error.screenshot = await takeScreenshot(driver);
-      console.log(
-        "Regular scraping failed with error. Attempting AI-powered extraction..."
-      );
       if (aiMode !== "disabled") {
+        console.log(
+          "Regular scraping failed with error. Attempting AI-powered extraction..."
+        );
         const aiResult = await attemptAIPriceExtraction(driver, url);
-
         if (aiResult.price > 0) {
           return {
             price: aiResult.price,
