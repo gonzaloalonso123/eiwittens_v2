@@ -83,14 +83,16 @@ export const performActions = async (
       console.log(
         "Regular scraping failed with error. Attempting AI-powered extraction..."
       );
-      const aiResult = await attemptAIPriceExtraction(driver, url);
+      if (aiMode !== "disabled") {
+        const aiResult = await attemptAIPriceExtraction(driver, url);
 
-      if (aiResult.price > 0) {
-        return {
-          price: aiResult.price,
-          error,
-          generatedActions: aiResult.actions,
-        };
+        if (aiResult.price > 0) {
+          return {
+            price: aiResult.price,
+            error,
+            generatedActions: aiResult.actions,
+          };
+        }
       }
     } catch (screenshotError) {
       console.error("Error taking screenshot", screenshotError);
