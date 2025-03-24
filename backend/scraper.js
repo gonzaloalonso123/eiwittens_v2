@@ -5,9 +5,26 @@ import { JSDOM } from "jsdom";
 import { v4 as uuidv4 } from "uuid";
 import { configDotenv } from "dotenv";
 
-const DEFAULT_TIMEOUT = 1000;
-const RETRY_ATTEMPTS = 3;
-const scraperOptions = [
+const logger = {
+  info: (message, ...args) => {
+    console.log(`[INFO] ${message}`, ...args);
+  },
+  warn: (message, ...args) => {
+    console.warn(`[WARN] ${message}`, ...args);
+  },
+  error: (message, error, ...args) => {
+    console.error(`[ERROR] ${message}`, error, ...args);
+  },
+};
+
+const SCRAPER_CONFIG = {
+  DEFAULT_TIMEOUT: 1000,
+  MAX_RETRY_ATTEMPTS: 3,
+  RETRY_BACKOFF_BASE: 1000,
+  AI_EXTRACTION_TIMEOUT: 2000,
+};
+
+const SCRAPER_OPTIONS = [
   "--disable-popups",
   "--window-size=1920,1080",
   "--no-sandbox",
@@ -16,15 +33,15 @@ const scraperOptions = [
   "--disable-extensions",
   "--remote-debugging-port=9230",
   "--disable-search-engine-choice-screen",
+  // "--headless",
 ];
-const defaultCookieBannerXPaths = [
+
+const DEFAULT_COOKIE_BANNER_XPATHS = [
   "//button[contains(text(), 'Accept')]",
   "//button[contains(text(), 'Accept All')]",
   "//button[contains(@class, 'cookie-accept')]",
   "//button[contains(@id, 'onetrust-accept-btn-handler')]",
-  "//button[contains(@id, 'CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll')]",
   "//*[@id='onetrust-accept-btn-handler']",
-  "//*[@id='CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll']",
 ];
 
 export const performActions = async (
@@ -33,82 +50,104 @@ export const performActions = async (
   config = {},
   aiMode = "disabled"
 ) => {
-  let driver;
+  let driver = null;
   let price = 0;
-  let error = { text: "", index: -1, screenshot: null };
-  let index = 0;
-  const { cookieBannerXPaths = [], timeout = DEFAULT_TIMEOUT } = config;
-
-  const allCookieBanners = [
-    ...cookieBannerXPaths,
-    ...defaultCookieBannerXPaths,
-  ];
+  let generatedActions = [];
+  let error = {
+    text: "",
+    index: -1,
+    screenshot: null,
+    details: null,
+  };
 
   try {
-    console.log("Performing actions on ->", url, actions);
-    driver = await initializeDriver();
-    await driver.get(url);
-    await handleCookieBanner(driver, allCookieBanners, timeout);
-    if (aiMode !== "prefered") {
-      price = await performRegularActions(driver, actions, timeout);
-      console.log(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
+    if (!url) {
+      throw new Error("URL is required");
     }
+    if (!Array.isArray(actions) || actions.length === 0) {
+      throw new Error("Actions must be a non-empty array");
+    }
+    driver = await initializeDriver().catch((driverError) => {
+      logger.error("Failed to initialize WebDriver", driverError);
+      throw new Error(`Driver Initialization Failed: ${driverError.message}`);
+    });
 
-    if (cleanPrice(price) === 0 && aiMode !== "disabled") {
-      console.log(
-        "Regular scraping failed. Attempting AI-powered extraction..."
-      );
-      const aiResult = await attemptAIPriceExtraction(driver, url);
+    await Promise.race([
+      driver.get(url),
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Page load timeout")),
+          SCRAPER_CONFIG.DEFAULT_TIMEOUT
+        )
+      ),
+    ]);
 
-      if (aiResult.price > 0) {
-        return {
-          price: aiResult.price,
-          error: { text: "", index: -1, screenshot: null },
-          generatedActions: aiResult.actions,
-        };
+    await handleCookieBanner(
+      driver,
+      [...(config.cookieBannerXPaths || []), ...DEFAULT_COOKIE_BANNER_XPATHS],
+      config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT
+    ).catch((cookieBannerError) => {
+      logger.warn("Cookie banner handling failed", cookieBannerError);
+    });
+
+    if (aiMode !== "prefered") {
+      try {
+        price = await performRegularActions(
+          driver,
+          actions,
+          config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT,
+          (i) => (error.index = i)
+        );
+        logger.info(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
+      } catch (actionError) {
+        logger.error("Regular actions failed", actionError);
+        error.text = actionError.message;
+        try {
+          error.screenshot = driver
+            ? await takeScreenshot(driver)
+            : "Driver unavailable";
+        } catch (screenshotError) {
+          logger.error("Screenshot capture failed", screenshotError);
+        }
+        throw actionError;
+      }
+    } else {
+      throw new Error("Skipping regular actions");
+    }
+  } catch (mainError) {
+    logger.error("Main error", mainError);
+    if (aiMode !== "disabled") {
+      logger.info("Attempting AI-powered extraction");
+      try {
+        const { actions: aiActions, price: aiPrice } =
+          await attemptAIPriceExtraction(driver, url);
+        generatedActions = aiActions;
+        price = aiPrice;
+      } catch (aiExtractionError) {
+        logger.error("AI-powered extraction failed", aiExtractionError);
+      }
+    }
+    error.text = mainError.message;
+    error.index = 0;
+  } finally {
+    if (driver) {
+      try {
+        await driver.quit();
+      } catch (quitError) {
+        logger.error("Error quitting WebDriver", quitError);
       }
     }
     return {
       price: cleanPrice(price),
       error,
-      generatedActions: null,
+      generatedActions,
     };
-  } catch (e) {
-    console.error("[ERROR EXECUTING ACTION]", e);
-    error.text = e.toString();
-    error.index = index;
-    price = 0;
-    try {
-      error.screenshot = await takeScreenshot(driver);
-      if (aiMode !== "disabled") {
-        console.log(
-          "Regular scraping failed with error. Attempting AI-powered extraction..."
-        );
-        const aiResult = await attemptAIPriceExtraction(driver, url);
-        if (aiResult.price > 0) {
-          return {
-            price: aiResult.price,
-            error,
-            generatedActions: aiResult.actions,
-          };
-        }
-      }
-    } catch (screenshotError) {
-      console.error("Error taking screenshot", screenshotError);
-    }
-    return {
-      price: 0,
-      error,
-      generatedActions: null,
-    };
-  } finally {
-    await driver?.quit();
   }
 };
 
 const initializeDriver = async () => {
   const options = new chrome.Options();
-  options.addArguments(...scraperOptions);
+  options.addArguments(...SCRAPER_OPTIONS);
   const driver = await new Builder()
     .forBrowser("chrome")
     .setChromeOptions(options)
@@ -119,9 +158,10 @@ const initializeDriver = async () => {
   return driver;
 };
 
-const performRegularActions = async (driver, actions, timeout) => {
+const performRegularActions = async (driver, actions, timeout, setIndex) => {
   let price = 0;
-  for (const action of actions) {
+  for (const [index, action] of actions.entries()) {
+    setIndex(index);
     const selector = action.selector || "xpath";
     price = await performActionWithRetry(
       driver,
@@ -158,31 +198,50 @@ const performActionWithRetry = async (
   price,
   timeout
 ) => {
-  for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt++) {
+  for (
+    let attempt = 1;
+    attempt <= SCRAPER_CONFIG.MAX_RETRY_ATTEMPTS;
+    attempt++
+  ) {
     try {
-      if (action.type === "click") {
-        await performClickAction(driver, action, selector, timeout);
-      } else if (action.type === "selectOption") {
-        await performSelectOptionAction(driver, action, selector, timeout);
-      } else if (action.type === "select") {
-        price = await performSelectAction(
-          driver,
-          action,
-          selector,
-          price,
-          timeout
-        );
-      } else if (action.type === "wait") {
-        await driver.sleep(action.duration || 2000);
+      if (!action || !action.type) {
+        throw new Error("Invalid action: Missing type");
       }
+
+      switch (action.type) {
+        case "click":
+          await performClickAction(driver, action, selector, timeout);
+          break;
+        case "selectOption":
+          await performSelectOptionAction(driver, action, selector, timeout);
+          break;
+        case "select":
+          price = await performSelectAction(
+            driver,
+            action,
+            selector,
+            price,
+            timeout
+          );
+          break;
+        case "wait":
+          await driver.sleep(action.duration || 2000);
+          break;
+        default:
+          throw new Error(`Unsupported action type: ${action.type}`);
+      }
+
       return price;
     } catch (e) {
-      console.warn(
+      logger.warn(
         `Attempt ${attempt} failed for action: ${action.type}`,
         e.message
       );
-      if (attempt === RETRY_ATTEMPTS) throw e;
-      await driver.sleep(1000 * attempt);
+
+      if (attempt === SCRAPER_CONFIG.MAX_RETRY_ATTEMPTS) {
+        throw e;
+      }
+      await driver.sleep(SCRAPER_CONFIG.RETRY_BACKOFF_BASE);
     }
   }
 };
@@ -310,44 +369,33 @@ const sendToOpenAI = async (html) => {
 };
 
 export const attemptAIPriceExtraction = async (driver, url) => {
-  try {
-    const html = await getPageHTML(driver);
-    const cleanedHTML = cleanHTML(html);
-    const aiResponse = await sendToOpenAI(cleanedHTML);
-    const { price, selectorType, selector } = aiResponse;
-    try {
-      const element = await driver.findElement(
-        By[selectorType || "xpath"](selector)
-      );
-      const extractedText = await element.getText();
-      const extractedPrice = cleanPrice(extractedText);
-      const actions = [
-        {
-          id: uuidv4(),
-          type: "select",
-          selector: selectorType || "xpath",
-          xpath: selector,
-        },
-      ];
+  const html = await getPageHTML(driver);
+  const cleanedHTML = cleanHTML(html);
+  const aiResponse = await sendToOpenAI(cleanedHTML);
+  const { price, selectorType, selector } = aiResponse;
 
-      console.log(
-        `AI extracted price: [${extractedPrice}] and scraping with xpath: [${selector}] return [${extractedText}]`
-      );
+  const element = await driver.findElement(
+    By[selectorType || "xpath"](selector)
+  );
+  const extractedText = await element.getText();
+  const extractedPrice = cleanPrice(extractedText);
+  const actions = [
+    {
+      id: uuidv4(),
+      type: "select",
+      selector: selectorType || "xpath",
+      xpath: selector,
+    },
+  ];
 
-      return {
-        price: extractedPrice || 0,
-        actions: actions,
-      };
-    } catch (error) {
-      return {
-        price: 0,
-        actions: [],
-      };
-    }
-  } catch (error) {
-    console.error("Error in AI price extraction:", error);
-    return { price: 0, actions: [] };
-  }
+  console.log(
+    `AI extracted price: [${extractedPrice}] and scraping with xpath: [${selector}] return [${extractedText}]`
+  );
+
+  return {
+    price: extractedPrice === price ? extractedPrice : 0,
+    actions: extractedPrice === price ? actions : [],
+  };
 };
 
 export default {
