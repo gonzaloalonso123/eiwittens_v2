@@ -45,7 +45,7 @@ export const performActions = async (
   ];
 
   try {
-    console.log("Performing actions on ->", url);
+    console.log("Performing actions on ->", url, actions);
     driver = await initializeDriver();
     await driver.get(url);
     await handleCookieBanner(driver, allCookieBanners, timeout);
@@ -147,9 +147,7 @@ const handleCookieBanner = async (driver, xpaths, timeout) => {
         console.log("Cookie banner handled");
         return;
       }
-    } catch (e) {
-      console.log("No cookie banner found with xpath:", xpath);
-    }
+    } catch (e) {}
   }
 };
 
@@ -317,9 +315,6 @@ export const attemptAIPriceExtraction = async (driver, url) => {
     const cleanedHTML = cleanHTML(html);
     const aiResponse = await sendToOpenAI(cleanedHTML);
     const { price, selectorType, selector } = aiResponse;
-
-    console.log(aiResponse);
-
     try {
       const element = await driver.findElement(
         By[selectorType || "xpath"](selector)
@@ -336,21 +331,13 @@ export const attemptAIPriceExtraction = async (driver, url) => {
       ];
 
       return {
-        price: extractedPrice > 0 ? extractedPrice : cleanPrice(price),
+        price: extractedPrice || 0,
         actions: actions,
       };
     } catch (error) {
-      console.error("Error verifying AI-extracted price:", error);
       return {
-        price: cleanPrice(price),
-        actions: [
-          {
-            id: uuidv4(),
-            type: "select",
-            selector: selectorType || "xpath",
-            xpath: selector,
-          },
-        ],
+        price: 0,
+        actions: [],
       };
     }
   } catch (error) {
