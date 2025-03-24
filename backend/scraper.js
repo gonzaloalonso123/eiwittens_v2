@@ -51,9 +51,9 @@ export const performActions = async (
     await handleCookieBanner(driver, allCookieBanners, timeout);
     if (aiMode !== "prefered") {
       price = await performRegularActions(driver, actions, timeout);
+      console.log(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
     }
 
-    console.log(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
     if (cleanPrice(price) === 0 && aiMode !== "disabled") {
       console.log(
         "Regular scraping failed. Attempting AI-powered extraction..."
@@ -329,6 +329,10 @@ export const attemptAIPriceExtraction = async (driver, url) => {
           xpath: selector,
         },
       ];
+
+      console.log(
+        `AI extracted price: [${extractedPrice}] and scraping with xpath: [${selector}] return [${extractedText}]`
+      );
 
       return {
         price: extractedPrice || 0,
