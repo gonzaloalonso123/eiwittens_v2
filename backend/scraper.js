@@ -42,6 +42,7 @@ const DEFAULT_COOKIE_BANNER_XPATHS = [
   "//button[contains(@class, 'cookie-accept')]",
   "//button[contains(@id, 'onetrust-accept-btn-handler')]",
   "//*[@id='onetrust-accept-btn-handler']",
+  "/html/body/div[2]/div/div/div/button[3]",
 ];
 
 export const performActions = async (
@@ -59,6 +60,7 @@ export const performActions = async (
     screenshot: null,
     details: null,
   };
+  const tempErrorIndex = -1;
 
   try {
     if (!url) {
@@ -72,23 +74,14 @@ export const performActions = async (
       throw new Error(`Driver Initialization Failed: ${driverError.message}`);
     });
 
-    await Promise.race([
-      driver.get(url),
-      new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Page load timeout")),
-          SCRAPER_CONFIG.DEFAULT_TIMEOUT
-        )
-      ),
-    ]);
-
-    await handleCookieBanner(
-      driver,
-      [...(config.cookieBannerXPaths || []), ...DEFAULT_COOKIE_BANNER_XPATHS],
-      config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT
-    ).catch((cookieBannerError) => {
-      logger.warn("Cookie banner handling failed", cookieBannerError);
-    });
+    await driver.get(url),
+      await handleCookieBanner(
+        driver,
+        [...(config.cookieBannerXPaths || []), ...DEFAULT_COOKIE_BANNER_XPATHS],
+        config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT
+      ).catch((cookieBannerError) => {
+        logger.warn("Cookie banner handling failed", cookieBannerError);
+      });
 
     if (aiMode !== "prefered") {
       try {
@@ -96,12 +89,11 @@ export const performActions = async (
           driver,
           actions,
           config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT,
-          (i) => (error.index = i)
+          (i) => (tempErrorIndex = i)
         );
         logger.info(`Collected price -> [${price}] -> [${cleanPrice(price)}]`);
       } catch (actionError) {
         logger.error("Regular actions failed", actionError);
-        error.text = actionError.message;
         try {
           error.screenshot = driver
             ? await takeScreenshot(driver)
@@ -127,8 +119,8 @@ export const performActions = async (
         logger.error("AI-powered extraction failed", aiExtractionError);
       }
     }
+    error.index = tempErrorIndex;
     error.text = mainError.message;
-    error.index = 0;
   } finally {
     if (driver) {
       try {
@@ -389,12 +381,12 @@ export const attemptAIPriceExtraction = async (driver, url) => {
   ];
 
   console.log(
-    `AI extracted price: [${extractedPrice}] and scraping with xpath: [${selector}] return [${extractedText}]`
+    `AI extracted price: [${price}] and scraping with xpath: [${selector}] return [${extractedText}]`
   );
 
   return {
-    price: extractedPrice === price ? extractedPrice : 0,
-    actions: extractedPrice === price ? actions : [],
+    price: extractedPrice,
+    actions: actions,
   };
 };
 
