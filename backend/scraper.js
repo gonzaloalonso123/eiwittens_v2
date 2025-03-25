@@ -41,6 +41,7 @@ const DEFAULT_COOKIE_BANNER_XPATHS = [
   "//button[contains(text(), 'Accept All')]",
   "//button[contains(@class, 'cookie-accept')]",
   "//button[contains(@id, 'onetrust-accept-btn-handler')]",
+  '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]',
   "//*[@id='onetrust-accept-btn-handler']",
   "/html/body/div[2]/div/div/div/button[3]",
 ];
@@ -60,7 +61,7 @@ export const performActions = async (
     screenshot: null,
     details: null,
   };
-  const tempErrorIndex = -1;
+  let tempErrorIndex = -1;
 
   try {
     if (!url) {
