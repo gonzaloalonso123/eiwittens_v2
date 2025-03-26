@@ -327,7 +327,7 @@ const cleanHTML = (html) => {
 };
 
 const sendToOpenAI = async (html) => {
-  const prompt = `Analyze this HTML and identify the product price. Return the price and how to select the element with selenium. Use the most reliable option for this case (xpath or css selector). Return a JSON with: price (string), selectorType (string: "xpath" or "css"), and selector (string).`;
+  const prompt = `Analyze this HTML and identify the product price. Return the price and how to select the element with selenium. Use the most robust option for this case (xpath or css selector). Return a JSON with: price (string), selectorType (string: "xpath" or "css"), and selector (string). Take into account that if the price changes, the selector should still work. Make sure to use the most reliable selector and selectorType.`;
 
   try {
     const completion = await openai.chat.completions.create({
