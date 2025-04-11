@@ -1,36 +1,27 @@
 const { getProducts, updateProduct } = require("./database/database");
 const { sendMail, sendErrorMail } = require("./email");
-const {
-  applyDiscount,
-  getTrustPilotScore,
-  makeCalculations,
-} = require("./helpers");
+const { applyDiscount, getTrustPilotScore, makeCalculations } = require("./helpers");
 const { performActions } = require("./scraper");
 
 const ALLOWED_WARNINGS = 15;
 const PRODUCT_NUMBER = null;
+const isScraping = false;
 // const PRODUCT_NUMBER = 10;
 
 const scrapeAndPush = async () => {
   try {
-    const { warnings, newProducts } = await executeAllScrapers();
-    if (warnings.length < ALLOWED_WARNINGS) {
-      sendErrorMail(`There are many warnings (${warnings.length})`);
+    if (!isScraping) {
+      isScraping = true;
+      const { warnings, newProducts } = await executeAllScrapers();
+      if (warnings.length < ALLOWED_WARNINGS) {
+        sendErrorMail(`There are many warnings (${warnings.length})`);
+      }
+      isScraping = false;
+      return newProducts;
     }
-    return newProducts;
   } catch (e) {
     console.log("Error in scrapeAndPush", e);
     sendErrorMail(`catch error in scrapeAndPush: ${e}`);
-  }
-};
-
-const retrieveAndPush = async () => {
-  try {
-    const products = await getProducts();
-    await updateWordPress(products);
-    console.log("EVERYTHING OK. PUSHED TO WORDPRESS");
-  } catch (e) {
-    console.log("Error in retrieveAndPush", e);
   }
 };
 
@@ -76,11 +67,7 @@ const scrapeAll = async (products) => {
 
 const addWarnings = (products) => {
   for (const product of products) {
-    if (
-      product.price === 0 ||
-      !product.ammount ||
-      (!product.protein_per_100g && !product.creatine_per_100g)
-    ) {
+    if (product.price === 0 || !product.ammount || (!product.protein_per_100g && !product.creatine_per_100g)) {
       product.warning = true;
     } else {
       product.warning = false;
@@ -105,9 +92,7 @@ const addTrustPilotScore = async (products) => {
 
   for (const product of products) {
     if (product.trustpilot_url && !scores[product.trustpilot_url]) {
-      scores[product.trustpilot_url] = await getTrustPilotScore(
-        product.trustpilot_url
-      );
+      scores[product.trustpilot_url] = await getTrustPilotScore(product.trustpilot_url);
     }
   }
 
