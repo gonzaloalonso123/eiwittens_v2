@@ -126,6 +126,5 @@ const getWarningUrls = (products) => {
 
 module.exports = {
   scrapeAndPush,
-  retrieveAndPush,
   refreshTrustPilot,
 };
