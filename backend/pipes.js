@@ -5,7 +5,7 @@ const { performActions } = require("./scraper");
 
 const ALLOWED_WARNINGS = 15;
 const PRODUCT_NUMBER = null;
-const isScraping = false;
+let isScraping = false;
 // const PRODUCT_NUMBER = 10;
 
 const scrapeAndPush = async () => {
