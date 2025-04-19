@@ -36,22 +36,18 @@ const SCRAPER_OPTIONS = [
   // "--headless",
 ];
 
-const DEFAULT_COOKIE_BANNER_XPATHS = [
-  "//button[contains(text(), 'Accept')]",
-  "//button[contains(text(), 'Accept All')]",
-  "//button[contains(@class, 'cookie-accept')]",
-  "//button[contains(@id, 'onetrust-accept-btn-handler')]",
-  '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]',
-  "//*[@id='onetrust-accept-btn-handler']",
-  "/html/body/div[2]/div/div/div/button[3]",
+const DEFAULT_COOKIE_BANNERS = [
+  { by: "xpath", selector: "//button[contains(text(), 'Accept')]" },
+  { by: "xpath", selector: "//button[contains(text(), 'Accept All')]" },
+  { by: "xpath", selector: "//button[contains(@class, 'accept-cookies')]" },
+  { by: "xpath", selector: "//button[contains(@id, 'onetrust-accept-btn-handler')]" },
+  { by: "xpath", selector: '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]' },
+  { by: "xpath", selector: "//*[@id='onetrust-accept-btn-handler']" },
+  { by: "xpath", selector: "/html/body/div[2]/div/div/div/button[3]" },
+  { by: "css", selector: "button.bg-xxl-green" },
 ];
 
-export const performActions = async (
-  actions,
-  url,
-  config = {},
-  aiMode = "disabled"
-) => {
+export const performActions = async (actions, url, config = {}, aiMode = "disabled") => {
   let driver = null;
   let price = 0;
   let generatedActions = [];
@@ -75,14 +71,14 @@ export const performActions = async (
       throw new Error(`Driver Initialization Failed: ${driverError.message}`);
     });
 
-    await driver.get(url),
-      await handleCookieBanner(
-        driver,
-        [...(config.cookieBannerXPaths || []), ...DEFAULT_COOKIE_BANNER_XPATHS],
-        config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT
-      ).catch((cookieBannerError) => {
-        logger.warn("Cookie banner handling failed", cookieBannerError);
-      });
+    await driver.get(url);
+    await handleCookieBanner(
+      driver,
+      [...(config.cookieBannerXPaths || []), ...DEFAULT_COOKIE_BANNERS],
+      config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT
+    ).catch((cookieBannerError) => {
+      logger.warn("Cookie banner handling failed", cookieBannerError);
+    });
 
     if (aiMode !== "prefered") {
       try {
@@ -96,9 +92,7 @@ export const performActions = async (
       } catch (actionError) {
         logger.error("Regular actions failed", actionError);
         try {
-          error.screenshot = driver
-            ? await takeScreenshot(driver)
-            : "Driver unavailable";
+          error.screenshot = driver ? await takeScreenshot(driver) : "Driver unavailable";
         } catch (screenshotError) {
           logger.error("Screenshot capture failed", screenshotError);
         }
@@ -112,8 +106,7 @@ export const performActions = async (
     if (aiMode !== "disabled") {
       logger.info("Attempting AI-powered extraction");
       try {
-        const { actions: aiActions, price: aiPrice } =
-          await attemptAIPriceExtraction(driver, url);
+        const { actions: aiActions, price: aiPrice } = await attemptAIPriceExtraction(driver, url);
         generatedActions = aiActions;
         price = aiPrice;
       } catch (aiExtractionError) {
@@ -141,13 +134,8 @@ export const performActions = async (
 const initializeDriver = async () => {
   const options = new chrome.Options();
   options.addArguments(...SCRAPER_OPTIONS);
-  const driver = await new Builder()
-    .forBrowser("chrome")
-    .setChromeOptions(options)
-    .build();
-  await driver.executeScript(
-    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
-  );
+  const driver = await new Builder().forBrowser("chrome").setChromeOptions(options).build();
+  await driver.executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});");
   return driver;
 };
 
@@ -156,24 +144,15 @@ const performRegularActions = async (driver, actions, timeout, setIndex) => {
   for (const [index, action] of actions.entries()) {
     setIndex(index);
     const selector = action.selector || "xpath";
-    price = await performActionWithRetry(
-      driver,
-      action,
-      selector,
-      price,
-      timeout
-    );
+    price = await performActionWithRetry(driver, action, selector, price, timeout);
   }
   return price;
 };
 
-const handleCookieBanner = async (driver, xpaths, timeout) => {
-  for (const xpath of xpaths) {
+const handleCookieBanner = async (driver, banners, timeout) => {
+  for (const banner of banners) {
     try {
-      const element = await driver.wait(
-        until.elementLocated(By.xpath(xpath)),
-        timeout / 2
-      );
+      const element = await driver.wait(until.elementLocated(By[banner.by ?? "xpath"](banner.selector)), timeout / 2);
       if (await element.isDisplayed()) {
         await element.click();
         await driver.sleep(1000);
@@ -184,18 +163,8 @@ const handleCookieBanner = async (driver, xpaths, timeout) => {
   }
 };
 
-const performActionWithRetry = async (
-  driver,
-  action,
-  selector,
-  price,
-  timeout
-) => {
-  for (
-    let attempt = 1;
-    attempt <= SCRAPER_CONFIG.MAX_RETRY_ATTEMPTS;
-    attempt++
-  ) {
+const performActionWithRetry = async (driver, action, selector, price, timeout) => {
+  for (let attempt = 1; attempt <= SCRAPER_CONFIG.MAX_RETRY_ATTEMPTS; attempt++) {
     try {
       if (!action || !action.type) {
         throw new Error("Invalid action: Missing type");
@@ -209,13 +178,7 @@ const performActionWithRetry = async (
           await performSelectOptionAction(driver, action, selector, timeout);
           break;
         case "select":
-          price = await performSelectAction(
-            driver,
-            action,
-            selector,
-            price,
-            timeout
-          );
+          price = await performSelectAction(driver, action, selector, price, timeout);
           break;
         case "wait":
           await driver.sleep(action.duration || 2000);
@@ -226,10 +189,7 @@ const performActionWithRetry = async (
 
       return price;
     } catch (e) {
-      logger.warn(
-        `Attempt ${attempt} failed for action: ${action.type}`,
-        e.message
-      );
+      logger.warn(`Attempt ${attempt} failed for action: ${action.type}`, e.message);
 
       if (attempt === SCRAPER_CONFIG.MAX_RETRY_ATTEMPTS) {
         throw e;
@@ -240,36 +200,21 @@ const performActionWithRetry = async (
 };
 
 const performClickAction = async (driver, action, selector, timeout) => {
-  const element = await driver.wait(
-    until.elementLocated(By[selector](action.xpath)),
-    timeout
-  );
+  const element = await driver.wait(until.elementLocated(By[selector](action.xpath)), timeout);
   await driver.wait(until.elementIsVisible(element), timeout);
   // await driver.executeScript("arguments[0].scrollIntoView(true);", element);
   await element.click();
 };
 
 const performSelectOptionAction = async (driver, action, selector, timeout) => {
-  const element = await driver.wait(
-    until.elementLocated(By[selector](action.xpath)),
-    timeout
-  );
+  const element = await driver.wait(until.elementLocated(By[selector](action.xpath)), timeout);
   const select = new Select(element);
   await select.selectByVisibleText(action.optionText);
 };
 
-const performSelectAction = async (
-  driver,
-  action,
-  selector,
-  price,
-  timeout
-) => {
+const performSelectAction = async (driver, action, selector, price, timeout) => {
   let selectedText = null;
-  const element = await driver.wait(
-    until.elementLocated(By[selector](action.xpath)),
-    timeout
-  );
+  const element = await driver.wait(until.elementLocated(By[selector](action.xpath)), timeout);
 
   if (action.xpath.endsWith("/text()")) {
     const parentXPath = action.xpath.replace("/text()", "");
@@ -311,17 +256,13 @@ const openai = new OpenAI({
 });
 
 const getPageHTML = async (driver) => {
-  return await driver.executeScript(
-    "return document.documentElement.outerHTML"
-  );
+  return await driver.executeScript("return document.documentElement.outerHTML");
 };
 
 const cleanHTML = (html) => {
   const dom = new JSDOM(html);
   const document = dom.window.document;
-  const elementsToRemove = document.querySelectorAll(
-    "script, style, iframe, img, svg, link, meta, noscript, footer"
-  );
+  const elementsToRemove = document.querySelectorAll("script, style, iframe, img, svg, link, meta, noscript, footer");
   elementsToRemove.forEach((element) => element.remove());
   return document.body.innerHTML;
 };
@@ -367,9 +308,7 @@ export const attemptAIPriceExtraction = async (driver, url) => {
   const aiResponse = await sendToOpenAI(cleanedHTML);
   const { price, selectorType, selector } = aiResponse;
 
-  const element = await driver.findElement(
-    By[selectorType || "xpath"](selector)
-  );
+  const element = await driver.findElement(By[selectorType || "xpath"](selector));
   const extractedText = await element.getText();
   const extractedPrice = cleanPrice(extractedText);
   const actions = [
@@ -381,9 +320,7 @@ export const attemptAIPriceExtraction = async (driver, url) => {
     },
   ];
 
-  console.log(
-    `AI extracted price: [${price}] and scraping with xpath: [${selector}] return [${extractedText}]`
-  );
+  console.log(`AI extracted price: [${price}] and scraping with xpath: [${selector}] return [${extractedText}]`);
 
   return {
     price: extractedPrice,
