@@ -152,6 +152,7 @@ const performRegularActions = async (driver, actions, timeout, setIndex) => {
 const handleCookieBanner = async (driver, banners, timeout) => {
   for (const banner of banners) {
     try {
+      console.log('attempting to get', banner);
       const element = await driver.wait(until.elementLocated(By[banner.by ?? "xpath"](banner.selector)), timeout / 2);
       if (await element.isDisplayed()) {
         await element.click();
