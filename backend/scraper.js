@@ -4,6 +4,9 @@ import OpenAI from "openai";
 import { JSDOM } from "jsdom";
 import { v4 as uuidv4 } from "uuid";
 import { configDotenv } from "dotenv";
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
 
 const logger = {
   info: (message, ...args) => {
@@ -45,8 +48,9 @@ const DEFAULT_COOKIE_BANNERS = [
   { by: "xpath", selector: '//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]' },
   { by: "xpath", selector: "//*[@id='onetrust-accept-btn-handler']" },
   { by: "xpath", selector: "/html/body/div[2]/div/div/div/button[3]" },
-  { by: "css", selector: "button.bg-xxl-green" },
 ];
+
+let profileDir;
 
 export const performActions = async (actions, url, config = {}, aiMode = "disabled") => {
   let driver = null;
@@ -120,6 +124,7 @@ export const performActions = async (actions, url, config = {}, aiMode = "disabl
     if (driver) {
       try {
         await driver.quit();
+        if (profileDir) await fs.rm(profileDir, { recursive: true, force: true });
       } catch (quitError) {
         logger.error("Error quitting WebDriver", quitError);
       }
@@ -134,7 +139,8 @@ export const performActions = async (actions, url, config = {}, aiMode = "disabl
 
 const initializeDriver = async () => {
   const options = new chrome.Options();
-  options.addArguments(...SCRAPER_OPTIONS);
+  profileDir = await makeProfileDir();
+  options.addArguments(...SCRAPER_OPTIONS, `--user-data-dir=${profileDir}`);
   const driver = await new Builder().forBrowser("chrome").setChromeOptions(options).build();
   await driver.executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});");
   return driver;
@@ -328,6 +334,11 @@ export const attemptAIPriceExtraction = async (driver, url) => {
     price: extractedPrice,
     actions: actions,
   };
+};
+
+const makeProfileDir = () => {
+  const dir = path.join(os.tmpdir(), `chrome-profile-${uuidv4()}`);
+  return fs.mkdir(dir).then(() => dir);
 };
 
 export default {
