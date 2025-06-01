@@ -8,21 +8,18 @@ const getProducts = async () => {
   const data = [];
 
   try {
-
-  const querySnapshot = await Products.get()
+    const querySnapshot = await Products.get();
     querySnapshot.forEach((doc) => {
       console.log(doc);
       data.push({ ...doc.data(), id: doc.id });
     });
-  }
-  catch (e) {
+  } catch (e) {
     console.log(e);
   }
   return data;
 };
 
 const updateProduct = async (id, data) => {
-  console.log(id, data.type, data.price);
   if (!id) return;
   const docRef = Products.doc(id);
   await docRef.update(data);
@@ -50,9 +47,25 @@ const addClickedTimeToProduct = async (id, extra) => {
   });
 };
 
+const getRogiersFavorites = async () => {
+  const rogiersFavorites = [];
+  await db
+    .collection("rogiers_favorites")
+    .get()
+    .then((querySnapshot) => {
+      console.log(querySnapshot);
+      querySnapshot.forEach((doc) => {
+        rogiersFavorites.push(doc.id);
+      });
+    });
+
+  return rogiersFavorites;
+};
+
 module.exports = {
   getProducts,
   updateProduct,
   addTimeInTopTenToProduct,
   addClickedTimeToProduct,
+  getRogiersFavorites,
 };

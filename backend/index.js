@@ -4,7 +4,11 @@ const cors = require("cors");
 const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
 const { scrapeAndPush, refreshTrustPilot } = require("./pipes");
-const { addClickedTimeToProduct, getProducts } = require("./database/database");
+const {
+  addClickedTimeToProduct,
+  getProducts,
+  getRogiersFavorites,
+} = require("./database/database");
 const { createBackupFile } = require("./backup");
 const multer = require("multer");
 const fs = require("fs");
@@ -62,6 +66,11 @@ app.get("/status", async (req, res) => {
 app.get("/posts", async (req, res) => {
   const posts = await getProducts();
   res.json(posts);
+});
+
+app.get("/rogiers-choice", async (req, res) => {
+  const rogiersChoice = await getRogiersFavorites();
+  res.json(rogiersChoice);
 });
 
 const upload = multer({

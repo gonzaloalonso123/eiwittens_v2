@@ -59,8 +59,16 @@ const getTrustPilotScore = async (url) => {
   return trustpilot_score;
 };
 
+const is30PercentLess = (p1, p2) => {
+  if (!p1 || !p2) {
+    return false;
+  }
+  return p1.price < p2.price * 1.3;
+};
+
 module.exports = {
   makeCalculations,
   applyDiscount,
   getTrustPilotScore,
+  is30PercentLess,
 };
