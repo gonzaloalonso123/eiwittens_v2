@@ -10,16 +10,10 @@ const getElementToBeCompared = (product) => {
 };
 const makeCalculations = (product) => {
   const elementToBeCompared = getElementToBeCompared(product);
-  const price_for_element_gram = getPriceByAHundredGrams(
-    product,
-    elementToBeCompared
-  );
+  const price_for_element_gram = getPriceByAHundredGrams(product, elementToBeCompared);
   product.price_for_element_gram = price_for_element_gram;
   if (product.type == "weight_gainer") {
-    product.price_per_100_calories = getPriceByAHundredGrams(
-      product,
-      product.calories_per_100g
-    );
+    product.price_per_100_calories = getPriceByAHundredGrams(product, product.calories_per_100g);
   }
 };
 
@@ -32,8 +26,7 @@ const getPriceByAHundredGrams = (product, element) => {
 const applyDiscount = (product) => {
   if (product.discount_value) {
     if (product.discount_type === "percentage") {
-      product.price =
-        product.price - product.price * (product.discount_value / 100);
+      product.price = product.price - product.price * (product.discount_value / 100);
     } else {
       product.price = product.price - product.discount_value;
     }
@@ -63,7 +56,7 @@ const is30PercentLess = (p1, p2) => {
   if (!p1 || !p2) {
     return false;
   }
-  return p1.price < p2.price * 1.3;
+  return p1.price * 1.3 < p2.price;
 };
 
 module.exports = {
