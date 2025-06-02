@@ -1,11 +1,6 @@
 const { getProducts, updateProduct } = require("./database/database");
 const { sendMail, sendErrorMail } = require("./email");
-const {
-  applyDiscount,
-  getTrustPilotScore,
-  makeCalculations,
-  is30PercentLess,
-} = require("./helpers");
+const { applyDiscount, getTrustPilotScore, makeCalculations, is30PercentLess } = require("./helpers");
 const { performActions } = require("./scraper");
 
 const ALLOWED_WARNINGS = 15;
@@ -36,13 +31,14 @@ const executeAllScrapers = async () => {
     oldProducts = oldProducts.slice(0, PRODUCT_NUMBER);
   }
   const newProducts = await scrapeAll(oldProducts);
-  addWarnings(newProducts);
-  addDiscounts(newProducts);
-  calculations(newProducts);
-  await updateFirebase(withSecurity(newProducts, oldProducts));
-  const warnings = getWarningUrls(newProducts);
-  sendMail(warnings, oldProducts, newProducts);
-  return { warnings, newProducts };
+  const productsWithSecurity = withSecurity(newProducts, oldProducts);
+  addWarnings(productsWithSecurity);
+  addDiscounts(productsWithSecurity);
+  calculations(productsWithSecurity);
+  await updateFirebase(productsWithSecurity);
+  const warnings = getWarningUrls(productsWithSecurity);
+  sendMail(warnings, oldProducts, productsWithSecurity);
+  return { warnings, productsWithSecurity };
 };
 
 const refreshTrustPilot = async () => {
@@ -72,11 +68,7 @@ const scrapeAll = async (products) => {
 
 const addWarnings = (products) => {
   for (const product of products) {
-    if (
-      product.price === 0 ||
-      !product.ammount ||
-      (!product.protein_per_100g && !product.creatine_per_100g)
-    ) {
+    if (product.price === 0 || !product.ammount || (!product.protein_per_100g && !product.creatine_per_100g)) {
       product.warning = true;
     } else {
       product.warning = false;
@@ -101,9 +93,7 @@ const addTrustPilotScore = async (products) => {
 
   for (const product of products) {
     if (product.trustpilot_url && !scores[product.trustpilot_url]) {
-      scores[product.trustpilot_url] = await getTrustPilotScore(
-        product.trustpilot_url
-      );
+      scores[product.trustpilot_url] = await getTrustPilotScore(product.trustpilot_url);
     }
   }
 
