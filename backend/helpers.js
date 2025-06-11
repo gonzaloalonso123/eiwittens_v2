@@ -1,4 +1,4 @@
-import { performActions } from "./scraper";
+import { performActions } from "./scraper.js";
 
 const getElementToBeCompared = (product) => {
   if (product.type === "proteine" || product.type === "weight_gainer") {
