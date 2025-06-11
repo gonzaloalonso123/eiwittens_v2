@@ -1,6 +1,12 @@
 const { getProducts, updateProduct } = require("./database/database");
 const { sendMail, sendErrorMail } = require("./email");
-const { applyDiscount, getTrustPilotScore, makeCalculations, is30PercentLess } = require("./helpers");
+const {
+  applyDiscount,
+  getTrustPilotScore,
+  makeCalculations,
+  is30PercentLess,
+  isLessByPercentOf,
+} = require("./helpers");
 const { performActions } = require("./scraper");
 
 const ALLOWED_WARNINGS = 15;
@@ -107,13 +113,13 @@ const addTrustPilotScore = async (products) => {
 const withSecurity = (newProducts, allProducts) => {
   // this function is to check if the price is significantly less than the old price, if so, we set the price to the old price,
   // and set the provisional_price to the new price, so the user will have to manually check it, and then approve it.
-  const newProductsWithSecurity = newProducts.map((p) => {
-    const oldProduct = allProducts.find((p2) => p2.id === p.id);
-    const isSignificantlyLess = is30PercentLess(p, oldProduct);
+  const newProductsWithSecurity = newProducts.map((newProduct) => {
+    const oldProduct = allProducts.find((p2) => p2.id === newProduct.id);
+    const isSignificantlyLess = isLessByPercentOf(newProduct, oldProduct, 30);
     return {
-      ...p,
-      price: isSignificantlyLess ? oldProduct.price : p.price,
-      provisional_price: isSignificantlyLess ? p.price : null,
+      ...newProduct,
+      price: isSignificantlyLess ? oldProduct.price : newProduct.price,
+      provisional_price: isSignificantlyLess ? newProduct.price : null,
     };
   });
   return newProductsWithSecurity;

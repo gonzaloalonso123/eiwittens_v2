@@ -52,11 +52,15 @@ const getTrustPilotScore = async (url) => {
   return trustpilot_score;
 };
 
-const is30PercentLess = (p1, p2) => {
-  if (!p1 || !p2) {
-    return false;
-  }
-  return p1.price * 1.3 < p2.price;
+export const isLessByPercentOf = (newProduct, oldProduct, percent) => {
+  const newElement = getElementToBeCompared(newProduct);
+  const oldElement = getElementToBeCompared(oldProduct);
+  if (!newElement || !oldElement) return false;
+
+  const newPrice = getPriceByAHundredGrams(newProduct, newElement);
+  const oldPrice = getPriceByAHundredGrams(oldProduct, oldElement);
+
+  return newPrice < oldPrice * (1 - percent / 100);
 };
 
 module.exports = {
