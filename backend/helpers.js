@@ -8,7 +8,7 @@ const getElementToBeCompared = (product) => {
     return product.creatine_per_100g;
   }
 };
-const makeCalculations = (product) => {
+export const makeCalculations = (product) => {
   const elementToBeCompared = getElementToBeCompared(product);
   const price_for_element_gram = getPriceByAHundredGrams(product, elementToBeCompared);
   product.price_for_element_gram = price_for_element_gram;
@@ -17,13 +17,13 @@ const makeCalculations = (product) => {
   }
 };
 
-const getPriceByAHundredGrams = (product, element) => {
+export const getPriceByAHundredGrams = (product, element) => {
   const element_ammount = product.ammount * (element / 100);
   const element_price = product.price / element_ammount;
   return Number(element_price * 100).toFixed(2);
 };
 
-const applyDiscount = (product) => {
+export const applyDiscount = (product) => {
   if (product.discount_value) {
     if (product.discount_type === "percentage") {
       product.price = product.price - product.price * (product.discount_value / 100);
@@ -37,7 +37,7 @@ const applyDiscount = (product) => {
   }
 };
 
-const getTrustPilotScore = async (url) => {
+export const getTrustPilotScore = async (url) => {
   const { price: trustpilot_score } = await performActions(
     [
       {
@@ -61,11 +61,4 @@ export const isLessByPercentOf = (newProduct, oldProduct, percent) => {
   const oldPrice = getPriceByAHundredGrams(oldProduct, oldElement);
 
   return newPrice < oldPrice * (1 - percent / 100);
-};
-
-module.exports = {
-  makeCalculations,
-  applyDiscount,
-  getTrustPilotScore,
-  is30PercentLess,
 };
