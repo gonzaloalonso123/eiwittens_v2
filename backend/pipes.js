@@ -1,12 +1,6 @@
 const { getProducts, updateProduct } = require("./database/database");
 const { sendMail, sendErrorMail } = require("./email");
-const {
-  applyDiscount,
-  getTrustPilotScore,
-  makeCalculations,
-  is30PercentLess,
-  isLessByPercentOf,
-} = require("./helpers");
+const { applyDiscount, getTrustPilotScore, makeCalculations, isLessByPercentOf } = require("./helpers");
 const { performActions } = require("./scraper");
 
 const ALLOWED_WARNINGS = 15;

@@ -1,4 +1,4 @@
-const { performActions } = require("./scraper");
+import { performActions } from "./scraper";
 
 const getElementToBeCompared = (product) => {
   if (product.type === "proteine" || product.type === "weight_gainer") {
