@@ -1,5 +1,4 @@
 const { db } = require("./firebase");
-const admin = require("firebase-admin");
 const { FieldValue } = require("firebase-admin/firestore");
 
 const Products = db.collection("products");
@@ -10,7 +9,6 @@ const getProducts = async () => {
   try {
     const querySnapshot = await Products.get();
     querySnapshot.forEach((doc) => {
-      console.log(doc);
       data.push({ ...doc.data(), id: doc.id });
     });
   } catch (e) {
