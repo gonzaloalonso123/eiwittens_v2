@@ -36,7 +36,7 @@ const SCRAPER_OPTIONS = [
   "--disable-extensions",
   "--remote-debugging-port=9230",
   "--disable-search-engine-choice-screen",
-  "--headless",
+  // "--headless",
 ];
 
 const DEFAULT_COOKIE_BANNERS = [
