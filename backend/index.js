@@ -3,7 +3,7 @@ const app = express();
 const cors = require("cors");
 const { performActions } = require("./scraper");
 const schedule = require("node-schedule");
-const { scrapeAndPush, refreshTrustPilot } = require("./pipes");
+const { scrapeAndPush, refreshTrustPilot, addProductToTracking, getTrackingSummary, writeTrackingLogs } = require("./pipes");
 const {
   addClickedTimeToProduct,
   getProducts,
