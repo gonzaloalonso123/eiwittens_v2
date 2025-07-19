@@ -28,9 +28,9 @@ app.use(
 );
 app.use(express.json());
 
+addProductToTracking("AzyO2U45IQMRvwXv9zJj");
+addProductToTracking("BapCkr57CEKFu8QA3m1M");
 app.post("/scrape-all", async (req, res) => {
-  addProductToTracking("AzyO2U45IQMRvwXv9zJj");
-  addProductToTracking("BapCkr57CEKFu8QA3m1M");
   console.log("Tracking summary:", getTrackingSummary())
   const products = await scrapeAndPush();
   await writeTrackingLogs()

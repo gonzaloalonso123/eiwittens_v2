@@ -107,7 +107,6 @@ export const performActions = async (actions, url, config = {}, aiMode = "disabl
       throw new Error("Skipping regular actions");
     }
   } catch (mainError) {
-    logger.error("Main error", mainError);
     if (aiMode !== "disabled") {
       logger.info("Attempting AI-powered extraction");
       try {
@@ -159,6 +158,7 @@ const performRegularActions = async (driver, actions, timeout, setIndex) => {
 const handleCookieBanner = async (driver, banners, timeout) => {
   for (const banner of banners) {
     try {
+      console.log(`Trying to handle cookie banner: ${JSON.stringify(banner)}`);
       const element = await driver.wait(until.elementLocated(By[banner.by ?? "xpath"](banner.selector)), timeout / 2);
       if (await element.isDisplayed()) {
         await element.click();
@@ -325,8 +325,6 @@ export const attemptAIPriceExtraction = async (driver, url) => {
       xpath: selector,
     },
   ];
-
-  console.log(`AI extracted price: [${price}] and scraping with xpath: [${selector}] return [${extractedText}]`);
 
   return {
     price: extractedPrice,
