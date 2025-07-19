@@ -43,7 +43,7 @@ const DEFAULT_COOKIE_BANNERS = [
   { by: "xpath", selector: "//button[contains(text(), 'Accept')]" },
   { by: "xpath", selector: "//button[contains(text(), 'Accept All')]" },
   { by: "xpath", selector: "//button[contains(text(), 'Alles accepteren')]" },
-  { by: "xpath", selector: "//button[contains(text(), 'Accepteer')]" },
+  { by: "xpath", selector: "//button[contains(text(), 'Accepteren')]" },
   { by: "xpath", selector: "//button[contains(@class, 'accept-cookies')]" },
   { by: "xpath", selector: "//button[contains(@id, 'onetrust-accept-btn-handler')]" },
   { by: "xpath", selector: "//button[contains(@id, 'accept')]" },
@@ -118,7 +118,7 @@ export const performActions = async (actions, url, config = {}, aiMode = "disabl
         generatedActions = aiActions;
         price = aiPrice;
       } catch (aiExtractionError) {
-        logger.error("AI-powered extraction failed", aiExtractionError);
+        // logger.error("AI-powered extraction failed", aiExtractionError);
       }
     }
     error.index = tempErrorIndex;
