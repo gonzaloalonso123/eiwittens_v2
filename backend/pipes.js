@@ -26,7 +26,7 @@ const scrapeAndPush = async () => {
 };
 
 const executeAllScrapers = async () => {
-  let oldProducts = (await getProducts()).filter((p) => p.enabled);
+  let oldProducts = (await getProducts()).filter((p) => p.enabled && p.scrape_enabled);
   if (PRODUCT_NUMBER) {
     oldProducts = oldProducts.slice(0, PRODUCT_NUMBER);
   }
@@ -51,7 +51,6 @@ const scrapeAll = async (products) => {
   const scrapedProducts = products.map((p) => ({ ...p }));
   for (let i = 0; i < products.length; i++) {
     const product = products[i];
-    if (product.scrape_enabled) {
       const { price } = await performActions(
         product.scraper,
         product.url,
@@ -61,7 +60,6 @@ const scrapeAll = async (products) => {
         "disabled"
       );
       scrapedProducts[i].price = price;
-    }
   }
   return scrapedProducts;
 };
