@@ -60,12 +60,7 @@ const sendToOpenAI = async (imageBuffer) => {
       ],
       response_format: zodResponseFormat(IngredientObject, "data"),
     });
-
-    console.log("OpenAI usage:", completion.usage);
     const ingredientsResult = completion.choices[0].message.parsed;
-    console.log("Parsed ingredients:", ingredientsResult);
-
-    console.log("Ingredients found:", ingredientsResult);
     return ingredientsResult.ingredients;
   } catch (error) {
     console.error("Error calling OpenAI:", error);

@@ -51,7 +51,6 @@ const getRogiersFavorites = async () => {
     .collection("rogiers_favorites")
     .get()
     .then((querySnapshot) => {
-      console.log(querySnapshot);
       querySnapshot.forEach((doc) => {
         rogiersFavorites.push(doc.id);
       });
