@@ -50,6 +50,8 @@ const DEFAULT_COOKIE_BANNERS = [
   { by: "xpath", selector: "/html/body/div[2]/div/div/div/button[3]" },
 ];
 
+const toCookieBannerFormat = (selector) => ({ by: "xpath", selector });
+
 let profileDir;
 
 export const performActions = async (actions, url, config = {}, aiMode = "disabled") => {
@@ -79,7 +81,7 @@ export const performActions = async (actions, url, config = {}, aiMode = "disabl
     await driver.get(url);
     await handleCookieBanner(
       driver,
-      [...(config.cookieBannerXPaths || []), ...DEFAULT_COOKIE_BANNERS],
+      [...(config.cookieBannerXPaths || []).map(toCookieBannerFormat), ...DEFAULT_COOKIE_BANNERS],
       config.timeout || SCRAPER_CONFIG.DEFAULT_TIMEOUT
     ).catch((cookieBannerError) => {
       logger.warn("Cookie banner handling failed", cookieBannerError);
