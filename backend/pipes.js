@@ -68,7 +68,7 @@ const scrapeAll = async (products) => {
 
 const addWarnings = (products) => {
   for (const product of products) {
-    if (product.price === 0 || !product.ammount || (!product.protein_per_100g && !product.creatine_per_100g)) {
+    if (product.price === 0 || !product.ammount) {
       product.warning = true;
     } else {
       product.warning = false;
