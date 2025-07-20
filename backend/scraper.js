@@ -224,8 +224,6 @@ const performSelectOptionAction = async (driver, action, selector, timeout) => {
 
 const performSelectAction = async (driver, action, selector, price, timeout) => {
   let selectedText = null;
-  const element = await driver.wait(until.elementLocated(By[selector](action.xpath)), timeout);
-
   if (action.xpath.endsWith("/text()")) {
     const parentXPath = action.xpath.replace("/text()", "");
     const parentElement = await driver.findElement(By[selector](parentXPath));
@@ -239,6 +237,7 @@ const performSelectAction = async (driver, action, selector, price, timeout) => 
       parentElement
     );
   } else {
+    const element = await driver.wait(until.elementLocated(By[selector](action.xpath)), timeout);
     selectedText = await element.getText();
   }
   price = price === 0 ? selectedText : price + "." + selectedText;
