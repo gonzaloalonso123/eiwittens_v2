@@ -266,7 +266,7 @@
                 const formData = new FormData(form);
                 formData.append("amount", amount);
 
-                const storedRef = sessionStorage.getItem("referralCode");
+                const storedRef = localStorage.getItem("referralCode");
                 if (storedRef) {
                     formData.append("ref", storedRef);
                 }

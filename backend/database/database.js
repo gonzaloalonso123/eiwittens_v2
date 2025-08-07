@@ -101,11 +101,11 @@ const getRogiersFavorites = async () => {
 };
 
 const createCreapurePayment = async (payment) => {
-  db.collection("creapure-payments").doc(payment.id).set({
+  db.collection("creapure-payments").doc(payment.paymentId).set({
     ...payment,
     createdAt: FieldValue.serverTimestamp(),
   });
-  return payment.id;
+  return payment.paymentId;
 };
 
 const createCreapureAffiliate = async ({ userCode, userName }) => {
