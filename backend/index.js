@@ -31,6 +31,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 addProductToTracking("AzyO2U45IQMRvwXv9zJj");
 addProductToTracking("BapCkr57CEKFu8QA3m1M");
@@ -147,29 +148,27 @@ app.post('/create-payment-creapure', async (req, res) => {
 
 app.post('/payment-webhook-creapure', async (req, res) => {
   const paymentId = req.body.id;
-  console.log(req.body);
+
+  if (!paymentId) {
+    res.sendStatus(400);
+    return;
+  }
+
   try {
     const payment = await mollieClient.payments.get(paymentId);
+    console.log(`Payment ${paymentId} status:`, payment.status);
 
-    if (payment.isPaid()) {
-      const amount = payment.amount.value;
-
-      createCreapurePayment({
-        amount,
-        address: payment.details?.billingAddress,
-        paymentId,
-      });
-    } else {
-      console.log('Payment not completed:', payment.status);
+    if (payment.status === 'paid') {
+      // Insert your fulfillment logic here
+      console.log(`Payment is paid – fulfill the order.`);
     }
 
     res.sendStatus(200);
-  } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).send('Webhook error');
+  } catch (err) {
+    console.error('Error handling Mollie webhook:', err);
+    res.sendStatus(500);
   }
 });
-
 
 
 
