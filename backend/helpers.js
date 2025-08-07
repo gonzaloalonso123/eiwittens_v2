@@ -14,8 +14,30 @@ export const makeCalculations = (product) => {
   product.price_for_element_gram = price_for_element_gram;
   if (product.type == "weight_gainer") {
     product.price_per_100_calories = getPriceByAHundredGrams(product, product.calories_per_100g);
+  } else if (product.type == "preworkout" && product.dose && product.ammount && product.price) {
+    product.price_per_dose = getPricePerDose(product);
+  } else if (product.type === "weight_gainer" && product.calories_per_100g && product.ammount && product.price) {
+    product.price_per_1000_calories = getPriceFor1000Calories(product);
   }
 };
+
+export const getPricePerDose = (product) => {
+  const dose = Number.parseFloat(product.dose);
+  const totalAmount = Number.parseFloat(product.ammount);
+  const price = Number.parseFloat(product.price.toString());
+  const totalDoses = totalAmount / dose;
+  const pricePerDose = price / totalDoses;
+  return pricePerDose.toFixed(2);
+};
+
+export const getPriceFor1000Calories = (product) => {
+  const caloriesAmount = Number.parseFloat(product.calories_per_100g);
+  const totalAmount = Number.parseFloat(product.ammount);
+  const price = Number.parseFloat(product.price.toString());
+  const totalCalories = (caloriesAmount * totalAmount) / 100;
+  const pricePerCalories = (price / totalCalories) * 100;
+  return pricePerCalories.toFixed(2);
+}
 
 export const getPriceByAHundredGrams = (product, element) => {
   const element_ammount = product.ammount * (element / 100);
@@ -33,7 +55,7 @@ export const applyDiscount = (product) => {
 
     try {
       product.price = Number(product.price).toFixed(2);
-    } catch (e) {}
+    } catch (e) { }
   }
 };
 

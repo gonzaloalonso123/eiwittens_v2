@@ -8,11 +8,15 @@ const {
   addClickedTimeToProduct,
   getProducts,
   getRogiersFavorites,
+  migrate,
+  createCreapurePayment,
 } = require("./database/database");
 const { createBackupFile } = require("./backup");
 const multer = require("multer");
 const fs = require("fs");
 const { sendToOpenAI } = require("./ia-ingredients");
+const bodyParser = require('body-parser');
+const mollie = require('@mollie/api-client');
 
 app.use(
   cors({
@@ -77,6 +81,10 @@ app.get("/rogiers-choice", async (req, res) => {
   res.json(rogiersChoice);
 });
 
+app.get("/execute-migration", async (req, res) => {
+  migrate();
+});
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -108,6 +116,64 @@ app.post("/product-clicked/:id", async (req, res) => {
   await addClickedTimeToProduct(id, extra);
   res.status(200).send("ok");
 });
+
+require('dotenv').config();
+
+const mollieClient = mollie({ apiKey: process.env.MOLLIE_API_KEY });
+
+app.use(bodyParser.json());
+
+app.post('/create-payment-creapure', async (req, res) => {
+
+  console.log('Payment request hit the server:', req.body);
+  const { amount, description, userId } = req.body;
+
+  try {
+    const payment = await mollieClient.payments.create({
+      amount: {
+        currency: 'EUR',
+        value: amount,
+      },
+      description,
+      redirectUrl: `https://gieriggroeien.nl/creapure-bedankt/${userId}`,
+      webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
+      metadata: {
+        userId,
+      },
+    });
+
+    res.json({ paymentUrl: payment.getCheckoutUrl() });
+  } catch (error) {
+    console.error('Error creating payment:', error);
+    res.status(500).send('Error initiating payment');
+  }
+});
+
+app.post('/payment-webhook-creapure', async (req, res) => {
+  const paymentId = req.body.id;
+  try {
+    const payment = await mollieClient.payments.get(paymentId);
+
+    if (payment.isPaid()) {
+      const amount = payment.amount.value;
+
+      createCreapurePayment({
+        amount,
+        address: payment.details?.billingAddress,
+        paymentId,
+      });
+    } else {
+      console.log('Payment not completed:', payment.status);
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).send('Webhook error');
+  }
+});
+
+
 
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
 schedule.scheduleJob({ hour: 13, minute: 10, dayOfWeek: 0 }, refreshTrustPilot);

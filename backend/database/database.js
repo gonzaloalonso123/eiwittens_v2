@@ -1,7 +1,48 @@
-const { db } = require("./firebase");
+const { makeCalculations } = require("../helpers");
 const { FieldValue } = require("firebase-admin/firestore");
+const fs = require("fs/promises");
+const path = require("path");
+const { db } = require("./firebase");
 
 const Products = db.collection("products");
+
+let migrationRunning = false;
+
+const migrate = async () => {
+  if (migrationRunning) {
+    console.log("Migration is already running. Please wait until it completes.");
+    return;
+  }
+  migrationRunning = true;
+  console.log("Executing migration...");
+  let products = await getProducts();
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const backupPath = path.resolve(`./product-backup-${timestamp}.json`);
+  try {
+    await fs.writeFile(backupPath, JSON.stringify(products, null, 2));
+    console.log(`✅ Backup created at ${backupPath}`);
+  } catch (err) {
+    console.error("❌ Failed to create backup", err);
+    return;
+  }
+  products.forEach(changeTypeOfPreworkout)
+  for (const product of products) {
+    await updateProduct(product.id, product);
+    console.log(`Updated product ${product.id}`);
+  }
+  console.log("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅")
+  console.log("Migration completed successfully.");
+  console.log("✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅")
+  migrationRunning = false;
+};
+
+const subtypes = ["beta_alanine", "l_citrulline", "tyrosine", "taurine", "caffeine_tablets"];
+const changeTypeOfPreworkout = async (product) => {
+  if (product.type === "preworkout" && product.subtypes && product.subtypes.some(subtype => subtypes.includes(subtype))) {
+    product.type = "preworkout_ingredient";
+  }
+}
+
 
 const getProducts = async () => {
   const data = [];
@@ -59,10 +100,38 @@ const getRogiersFavorites = async () => {
   return rogiersFavorites;
 };
 
+const createCreapurePayment = async ({ amount, address, paymentId }) => {
+  db.collection("creapure-payments").doc(paymentId).set({
+    amount,
+    address,
+    status: "pending",
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  return paymentId;
+};
+
+const createCreapureAffiliate = async ({ userCode, userName }) => {
+  db.collection("creapure-affiliates").doc(userCode).set({
+    userName,
+    tickets: 0,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  return userCode;
+};
+
+const addTicketToAffiliate = async (userCode) => {
+  const docRef = db.collection("creapure-affiliates").doc(userCode);
+  await docRef.update({
+    tickets: FieldValue.increment(1),
+  });
+};
+
 module.exports = {
   getProducts,
   updateProduct,
   addTimeInTopTenToProduct,
   addClickedTimeToProduct,
   getRogiersFavorites,
+  createCreapurePayment,
+  migrate,
 };
