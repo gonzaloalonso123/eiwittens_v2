@@ -174,6 +174,7 @@ app.post('/payment-webhook-creapure', async (req, res) => {
 
 
 
+
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
 schedule.scheduleJob({ hour: 13, minute: 10, dayOfWeek: 0 }, refreshTrustPilot);
 schedule.scheduleJob({ hour: 13, minute: 0, dayOfWeek: 0 }, createBackupFile);
