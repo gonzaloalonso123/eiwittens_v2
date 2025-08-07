@@ -15,7 +15,6 @@ const { createBackupFile } = require("./backup");
 const multer = require("multer");
 const fs = require("fs");
 const { sendToOpenAI } = require("./ia-ingredients");
-const bodyParser = require('body-parser');
 const { createMollieClient } = require('@mollie/api-client');
 
 
@@ -121,7 +120,6 @@ app.post("/product-clicked/:id", async (req, res) => {
 require('dotenv').config();
 
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
-app.use(bodyParser.json());
 
 app.post('/create-payment-creapure', async (req, res) => {
 
