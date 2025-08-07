@@ -123,9 +123,20 @@ require('dotenv').config();
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
 app.post('/create-payment-creapure', async (req, res) => {
-
   console.log('Payment request hit the server:', req.body);
-  const { amount, description } = req.body;
+  const {
+    amount,
+    description,
+    referralCode,
+    firstName,
+    lastName,
+    phone,
+    country,
+    street,
+    city,
+    postal,
+    offers
+  } = req.body;
 
   const userId = req.query.userId || 'defaultUser';
   try {
@@ -134,9 +145,36 @@ app.post('/create-payment-creapure', async (req, res) => {
         currency: 'EUR',
         value: Number(amount).toFixed(2),
       },
+      metadata: {
+        referee: referralCode || null,
+        firstName,
+        lastName,
+        phone,
+        country,
+        street,
+        city,
+        postal,
+        offers: !!offers
+      },
       description,
       redirectUrl: `https://gieriggroeien.nl/creapure-bedankt/${userId}`,
       webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
+      billingAddress: {
+        givenName: firstName,
+        familyName: lastName,
+        streetAndNumber: street,
+        city,
+        postalCode: postal,
+        country
+      },
+      shippingAddress: {
+        givenName: firstName,
+        familyName: lastName,
+        streetAndNumber: street,
+        city,
+        postalCode: postal,
+        country
+      }
     });
 
     res.json({ paymentUrl: payment.getCheckoutUrl() });
@@ -158,10 +196,31 @@ app.post('/payment-webhook-creapure', async (req, res) => {
     const payment = await mollieClient.payments.get(paymentId);
     console.log(`Payment ${paymentId} status:`, payment.status);
 
-
-    console.log(payment);
     if (payment.status === 'paid') {
-      // Insert your fulfillment logic here
+      const meta = payment.metadata || {};
+      const address = payment.details?.shippingAddress || payment.shippingAddress || {
+        givenName: meta.firstName,
+        familyName: meta.lastName,
+        streetAndNumber: meta.street,
+        city: meta.city,
+        postalCode: meta.postal,
+        country: meta.country
+      };
+
+      await createCreapurePayment({
+        amount: payment.amount.value,
+        address,
+        paymentId: payment.id,
+        firstName: meta.firstName,
+        lastName: meta.lastName,
+        phone: meta.phone,
+        country: meta.country,
+        street: meta.street,
+        city: meta.city,
+        postal: meta.postal,
+        offers: meta.offers,
+        referralCode: meta.referralCode
+      });
       console.log(`Payment is paid – fulfill the order.`);
     }
 
