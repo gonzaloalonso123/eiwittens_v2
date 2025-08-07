@@ -229,7 +229,8 @@ app.post('/payment-webhook-creapure', async (req, res) => {
         city: meta.city,
         postal: meta.postal,
         offers: meta.offers,
-        referralCode: meta.referralCode
+        referralCode: meta.referralCode,
+        nickName: generateNickname(meta.firstName)
       });
       console.log(`Payment is paid – fulfill the order.`);
     }
