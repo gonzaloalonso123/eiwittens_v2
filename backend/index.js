@@ -122,6 +122,12 @@ require('dotenv').config();
 
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
+const amounts = {
+  "1": "28.00",
+  "2": "50.00",
+  "3": "70.00",
+}
+
 app.post('/create-payment-creapure', async (req, res) => {
   console.log('Payment request hit the server:', req.body);
   const {
@@ -139,11 +145,15 @@ app.post('/create-payment-creapure', async (req, res) => {
   } = req.body;
 
   const userId = req.query.userId || 'defaultUser';
+
+  if (!amounts[amount]) {
+    return res.status(400).send('Invalid amount selected');
+  }
   try {
     const payment = await mollieClient.payments.create({
       amount: {
         currency: 'EUR',
-        value: Number(amount).toFixed(2),
+        value: amounts[amount] || '0.00',
       },
       metadata: {
         referee: referralCode || null,
