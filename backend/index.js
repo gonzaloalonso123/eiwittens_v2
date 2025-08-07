@@ -133,7 +133,7 @@ app.post('/create-payment-creapure', async (req, res) => {
     const payment = await mollieClient.payments.create({
       amount: {
         currency: 'EUR',
-        value: amount,
+        value: parseFloat(amount),
       },
       description,
       redirectUrl: `https://gieriggroeien.nl/creapure-bedankt/${userId}`,
