@@ -150,6 +150,7 @@ app.post('/create-payment-creapure', async (req, res) => {
     return res.status(400).send('Invalid amount selected');
   }
   try {
+    const nickName = generateNickname(firstName);
     const payment = await mollieClient.payments.create({
       amount: {
         currency: 'EUR',
@@ -164,10 +165,11 @@ app.post('/create-payment-creapure', async (req, res) => {
         street,
         city,
         postal,
+        nickName,
         offers: !!offers
       },
       description: description || 'Creapure Payment',
-      redirectUrl: `https://gieriggroeien.nl/creapure-bedankt/${userId}`,
+      redirectUrl: `https://gieriggroeien.nl/creapure-bedankt?nickName=${nickName}`,
       webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
       billingAddress: {
         givenName: firstName,
@@ -230,7 +232,7 @@ app.post('/payment-webhook-creapure', async (req, res) => {
         postal: meta.postal,
         offers: meta.offers,
         referralCode: meta.referralCode,
-        nickName: generateNickname(meta.firstName)
+        nickName: meta.nickName,
       });
       console.log(`Payment is paid – fulfill the order.`);
     }
