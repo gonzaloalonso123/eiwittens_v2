@@ -166,7 +166,6 @@ app.post('/create-payment-creapure', async (req, res) => {
         postal,
         offers: !!offers
       },
-      description,
       redirectUrl: `https://gieriggroeien.nl/creapure-bedankt/${userId}`,
       webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
       billingAddress: {
