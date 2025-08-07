@@ -134,7 +134,7 @@ app.post('/create-payment-creapure', async (req, res) => {
   const {
     amount,
     description,
-    referralCode,
+    ref,
     firstName,
     lastName,
     phone,
@@ -155,7 +155,7 @@ app.post('/create-payment-creapure', async (req, res) => {
         value: amounts[amount] || '0.00',
       },
       metadata: {
-        referralCode,
+        referralCode: ref || null,
         firstName,
         lastName,
         phone,
