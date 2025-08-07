@@ -120,7 +120,7 @@ app.post("/product-clicked/:id", async (req, res) => {
 
 require('dotenv').config();
 
-const mollieClient = createMollieClient({ apiKey: 'test_dHar4XY7LxsDOtmnkVtjNVWXLSlXsM' });
+const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 app.use(bodyParser.json());
 
 app.post('/create-payment-creapure', async (req, res) => {
