@@ -158,6 +158,8 @@ app.post('/payment-webhook-creapure', async (req, res) => {
     const payment = await mollieClient.payments.get(paymentId);
     console.log(`Payment ${paymentId} status:`, payment.status);
 
+
+    console.log(payment);
     if (payment.status === 'paid') {
       // Insert your fulfillment logic here
       console.log(`Payment is paid – fulfill the order.`);
