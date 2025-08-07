@@ -16,7 +16,8 @@ const multer = require("multer");
 const fs = require("fs");
 const { sendToOpenAI } = require("./ia-ingredients");
 const bodyParser = require('body-parser');
-const mollie = require('@mollie/api-client');
+const { createMollieClient } = require('@mollie/api-client');
+
 
 app.use(
   cors({
@@ -119,8 +120,7 @@ app.post("/product-clicked/:id", async (req, res) => {
 
 require('dotenv').config();
 
-const mollieClient = mollie({ apiKey: process.env.MOLLIE_API_KEY });
-
+const mollieClient = createMollieClient({ apiKey: 'test_dHar4XY7LxsDOtmnkVtjNVWXLSlXsM' });
 app.use(bodyParser.json());
 
 app.post('/create-payment-creapure', async (req, res) => {
