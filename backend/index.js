@@ -126,7 +126,7 @@ app.use(bodyParser.json());
 app.post('/create-payment-creapure', async (req, res) => {
 
   console.log('Payment request hit the server:', req.body);
-  const { amount, description, userId } = req.body;
+  const { amount, description} = req.body;
 
   try {
     const payment = await mollieClient.payments.create({
@@ -137,9 +137,6 @@ app.post('/create-payment-creapure', async (req, res) => {
       description,
       redirectUrl: `https://gieriggroeien.nl/creapure-bedankt/${userId}`,
       webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
-      metadata: {
-        userId,
-      },
     });
 
     res.json({ paymentUrl: payment.getCheckoutUrl() });
