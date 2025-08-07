@@ -101,9 +101,15 @@ const getRogiersFavorites = async () => {
 };
 
 const createCreapurePayment = async (payment) => {
+  // filter out undefined properties
+  Object.keys(payment).forEach((key) => {
+    if (payment[key] === undefined) {
+      delete payment[key];
+    }
+  });
+  payment.createdAt = FieldValue.serverTimestamp();
   db.collection("creapure-payments").doc(payment.paymentId).set({
     ...payment,
-    createdAt: FieldValue.serverTimestamp(),
   });
   return payment.paymentId;
 };
