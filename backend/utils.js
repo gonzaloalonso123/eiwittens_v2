@@ -33,5 +33,5 @@ const randomNumber = () => {
 
 export const generateNickname = (name) => {
     const firstLetter = name.charAt(0).toUpperCase();
-    return `${name} ${namesForLetters[firstLetter]} ${randomNumber()}` || "de Onbekende";
+    return `${name}${namesForLetters[firstLetter]}${randomNumber()}` || "de Onbekende";
 }

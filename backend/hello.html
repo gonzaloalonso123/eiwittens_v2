@@ -195,6 +195,8 @@
             </div>
 
             <hr>
+            <input type="hidden" id="amount-input" name="amount" value="1">
+
 
             <div class="invoice-total">
                 <strong>Totaal</strong>
@@ -204,29 +206,36 @@
     </div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const amount = parseInt(params.get("amount")) || 1;
-
         const pricing = {
             1: 24,
             2: 23,
             3: 22
         };
 
-        const unitPrice = pricing[amount] || 24;
-        const productTotal = unitPrice * amount;
-        const shipping = 4;
-        const grandTotal = productTotal + shipping;
-
-        document.getElementById("amount-display").textContent = `${amount} kilo${amount > 1 ? 's' : ''}`;
-        document.getElementById("product-total").textContent = `€${productTotal.toFixed(2)}`;
-        document.getElementById("grand-total").textContent = `€${grandTotal.toFixed(2)}`;
-
         document.addEventListener("DOMContentLoaded", () => {
+            // Get amount from URL
+            let amount = parseInt(new URLSearchParams(window.location.search).get("amount"));
+            if (![1, 2, 3].includes(amount)) amount = 1;
+
+            // Update hidden input
+            const amountInput = document.getElementById("amount-input");
+            amountInput.value = amount;
+
+            // Update invoice
+            const unitPrice = pricing[amount] || 24;
+            const productTotal = unitPrice * amount;
+            const shipping = 4;
+            const grandTotal = productTotal + shipping;
+
+            document.getElementById("amount-display").textContent = `${amount} kilo${amount > 1 ? 's' : ''}`;
+            document.getElementById("product-total").textContent = `€${productTotal.toFixed(2)}`;
+            document.getElementById("grand-total").textContent = `€${grandTotal.toFixed(2)}`;
+
+            // Form submission
             const form = document.querySelector("#creapure-checkout-form");
 
-            form.addEventListener("submit", (e) => {
-                e.preventDefault(); // Stop default submission
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
 
                 const requiredFields = ["firstName", "lastName", "phone", "street", "city", "postal"];
                 let valid = true;
@@ -254,29 +263,43 @@
                     return;
                 }
 
-                // Add hidden ref field if available
+                const formData = new FormData(form);
+                formData.append("amount", amount);
+
                 const storedRef = sessionStorage.getItem("referralCode");
-                if (storedRef && !form.querySelector('[name="ref"]')) {
-                    const input = document.createElement("input");
-                    input.type = "hidden";
-                    input.name = "ref";
-                    input.value = storedRef;
-                    form.appendChild(input);
+                if (storedRef) {
+                    formData.append("ref", storedRef);
                 }
 
-                if (!form.querySelector('[name="amount"]')) {
-                    const input = document.createElement("input");
-                    input.type = "hidden";
-                    input.name = "amount";
-                    input.value = amount;
-                    form.appendChild(input);
+                const data = {};
+                formData.forEach((value, key) => {
+                    data[key] = value;
+                });
+
+                try {
+                    const response = await fetch("https://gierig-groeien.api-gollum.online/create-payment-creapure", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) throw new Error("Fout bij het aanmaken van betaling.");
+                    const result = await response.json();
+                    if (!result.paymentUrl && !result.redirectUrl) {
+                        alert("Er is een fout opgetreden bij het verwerken van je bestelling.");
+                        return;
+                    }
+                    window.location.href = result.paymentUrl || result.redirectUrl;
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Er is een fout opgetreden bij het verwerken van je bestelling.");
                 }
-                form.submit();
             });
         });
     </script>
-
-
 </body>
 
 </html>

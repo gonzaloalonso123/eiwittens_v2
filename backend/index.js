@@ -144,9 +144,6 @@ app.post('/create-payment-creapure', async (req, res) => {
     postal,
     offers
   } = req.body;
-
-  const userId = req.query.userId || 'defaultUser';
-
   if (!amounts[amount]) {
     return res.status(400).send('Invalid amount selected');
   }
@@ -158,7 +155,7 @@ app.post('/create-payment-creapure', async (req, res) => {
         value: amounts[amount] || '0.00',
       },
       metadata: {
-        referee: referralCode || null,
+        referralCode,
         firstName,
         lastName,
         phone,

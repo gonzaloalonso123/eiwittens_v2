@@ -100,14 +100,12 @@ const getRogiersFavorites = async () => {
   return rogiersFavorites;
 };
 
-const createCreapurePayment = async ({ amount, address, paymentId }) => {
-  db.collection("creapure-payments").doc(paymentId).set({
-    amount,
-    address,
-    status: "pending",
+const createCreapurePayment = async (payment) => {
+  db.collection("creapure-payments").doc(payment.id).set({
+    ...payment,
     createdAt: FieldValue.serverTimestamp(),
   });
-  return paymentId;
+  return payment.id;
 };
 
 const createCreapureAffiliate = async ({ userCode, userName }) => {
