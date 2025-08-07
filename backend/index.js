@@ -126,8 +126,9 @@ app.use(bodyParser.json());
 app.post('/create-payment-creapure', async (req, res) => {
 
   console.log('Payment request hit the server:', req.body);
-  const { amount, description} = req.body;
+  const { amount, description } = req.body;
 
+  const userId = req.query.userId || 'defaultUser';
   try {
     const payment = await mollieClient.payments.create({
       amount: {
