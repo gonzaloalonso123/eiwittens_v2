@@ -16,6 +16,7 @@ const multer = require("multer");
 const fs = require("fs");
 const { sendToOpenAI } = require("./ia-ingredients");
 const { createMollieClient } = require('@mollie/api-client');
+const { generateNickname } = require("./utils");
 
 
 app.use(
