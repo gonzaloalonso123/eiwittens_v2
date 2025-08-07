@@ -149,6 +149,7 @@ app.post('/create-payment-creapure', async (req, res) => {
 
 app.post('/payment-webhook-creapure', async (req, res) => {
   const paymentId = req.body.id;
+  console.log(req.body);
   try {
     const payment = await mollieClient.payments.get(paymentId);
 
