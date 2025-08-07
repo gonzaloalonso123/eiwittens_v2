@@ -175,7 +175,7 @@ app.post('/create-payment-creapure', async (req, res) => {
         streetAndNumber: street,
         city,
         postalCode: postal,
-        country
+        country: "NL"
       },
       shippingAddress: {
         givenName: firstName,
