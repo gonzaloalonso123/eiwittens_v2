@@ -3,6 +3,7 @@ const { FieldValue } = require("firebase-admin/firestore");
 const fs = require("fs/promises");
 const path = require("path");
 const { db } = require("./firebase");
+const { url } = require("inspector");
 
 const Products = db.collection("products");
 
@@ -101,7 +102,6 @@ const getRogiersFavorites = async () => {
 };
 
 const createCreapurePayment = async (payment) => {
-  // filter out undefined properties
   Object.keys(payment).forEach((key) => {
     if (payment[key] === undefined) {
       delete payment[key];
@@ -112,6 +112,57 @@ const createCreapurePayment = async (payment) => {
     ...payment,
   });
   return payment.paymentId;
+};
+
+const createCreapureUser = async (userId, userData) => {
+  const userRef = db.collection("creapure-users").doc(userId);
+  await userRef.set({
+    ...userData,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+  return userId;
+};
+
+const addAmountToGoal = async (amount) => {
+  const docRef = db.collection("creapure-amount").doc(1);
+  const prices = {
+    1: 28,
+    2: 50,
+    3: 70
+  }
+  await docRef.update({
+    amount: FieldValue.increment(amount),
+    amount_kilograms: FieldValue.increment(prices[amount])
+  });
+}
+
+
+const addNicknameToUser = async (userId, nickname) => {
+  const docRef = db.collection("creapure-users").doc(userId);
+  await docRef.update({
+    nickname: nickname || '',
+    affiliate_url: nickname ? `https://gieriggroeien.nl/creapure-crowdfund-actie/?ref=${nickname}` : ''
+  });
+  return nickname || '';
+};
+
+const checkIfNicknameExists = async (nickname) => {
+  const querySnapshot = await db.collection("creapure-users").where("nickname", "==", nickname).get();
+  return !querySnapshot.empty;
+};
+
+const getAmountGoal = async () => {
+  const docRef = db.collection("creapure-amount").doc(1);
+  const doc = await docRef.get();
+  if (!doc.exists) {
+    return 0;
+  }
+  const data = doc.data();
+  const totalAmount = data.amount || 0 + data.extra_amount || 0;
+  return {
+    totalAmount: totalAmount,
+    totalKilograms: data.amount_kilograms || 0,
+  };
 };
 
 const createCreapureAffiliate = async ({ userCode, userName }) => {
@@ -132,10 +183,15 @@ const addTicketToAffiliate = async (userCode) => {
 
 module.exports = {
   getProducts,
+  createCreapureUser,
   updateProduct,
+  addAmountToGoal,
+  getAmountGoal,
   addTimeInTopTenToProduct,
   addClickedTimeToProduct,
   getRogiersFavorites,
   createCreapurePayment,
+  addNicknameToUser,
+  checkIfNicknameExists,
   migrate,
 };

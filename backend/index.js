@@ -10,6 +10,9 @@ const {
   getRogiersFavorites,
   migrate,
   createCreapurePayment,
+  addAmountToGoal,
+  getAmountGoal,
+  createCreapureUser,
 } = require("./database/database");
 const { createBackupFile } = require("./backup");
 const multer = require("multer");
@@ -17,6 +20,7 @@ const fs = require("fs");
 const { sendToOpenAI } = require("./ia-ingredients");
 const { createMollieClient } = require('@mollie/api-client');
 const { generateNickname } = require("./utils");
+const { randomUUID } = require("crypto");
 
 
 app.use(
@@ -142,13 +146,14 @@ app.post('/create-payment-creapure', async (req, res) => {
     street,
     city,
     postal,
-    offers
+    offers,
+    email
   } = req.body;
   if (!amounts[amount]) {
     return res.status(400).send('Invalid amount selected');
   }
   try {
-    const nickName = generateNickname(firstName);
+    const userId = randomUUID();
     const payment = await mollieClient.payments.create({
       amount: {
         currency: 'EUR',
@@ -164,10 +169,12 @@ app.post('/create-payment-creapure', async (req, res) => {
         city,
         postal,
         nickName,
+        email,
+        userId,
         offers: !!offers
       },
       description: description || 'Creapure Payment',
-      redirectUrl: `https://gieriggroeien.nl/creapure-bedankt?nickName=${nickName}`,
+      redirectUrl: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}`,
       webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
       billingAddress: {
         givenName: firstName,
@@ -193,6 +200,7 @@ app.post('/create-payment-creapure', async (req, res) => {
     res.status(500).send('Error initiating payment');
   }
 });
+
 
 app.post('/payment-webhook-creapure', async (req, res) => {
   const paymentId = req.body.id;
@@ -228,11 +236,20 @@ app.post('/payment-webhook-creapure', async (req, res) => {
         street: meta.street,
         city: meta.city,
         postal: meta.postal,
+        email: meta.email,
         offers: meta.offers,
         referralCode: meta.referralCode || null,
-        nickName: meta.nickName || '',
+        userId: meta.userId
       });
-      console.log(`Payment is paid – fulfill the order.`);
+
+      await createCreapureUser(userId, {
+        firstName: meta.firstName,
+        lastName: meta.lastName,
+        phone: meta.phone,
+        email: meta.email,
+      });
+
+      addAmountToGoal(parseFloat(payment.amount.value))
     }
 
     res.sendStatus(200);
@@ -243,6 +260,37 @@ app.post('/payment-webhook-creapure', async (req, res) => {
 });
 
 
+const GOAL = 200;
+app.get('/creapure-amount', async (req, res) => {
+  try {
+    const { totalKilograms } = await getAmountGoal();
+    res.json({
+      goalKg: GOAL,
+      claimedKg: totalKilograms,
+    });
+  } catch (error) {
+    console.error('Error fetching Creapure amount:', error);
+    res.status(500).send('Error fetching Creapure amount');
+  }
+});
+
+app.post('add-nickname', async (req, res) => {
+  const { userId, nickname } = req.body;
+  if (!userId || !nickname) {
+    return res.status(400).send('User ID and nickname are required');
+  }
+  try {
+    const exists = await checkIfNicknameExists(nickname);
+    if (exists) {
+      return res.status(400).send('Nickname already exists');
+    }
+    const updatedNickname = await addNicknameToUser(userId, nickname);
+    res.json({ nickname: updatedNickname });
+  } catch (error) {
+    console.error('Error adding nickname:', error);
+    res.status(500).send('Error adding nickname');
+  }
+});
 
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
 schedule.scheduleJob({ hour: 13, minute: 10, dayOfWeek: 0 }, refreshTrustPilot);
