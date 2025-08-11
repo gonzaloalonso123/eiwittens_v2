@@ -273,7 +273,7 @@ app.get('/creapure-amount', async (req, res) => {
   }
 });
 
-app.post('add-nickname', async (req, res) => {
+app.post('/add-nickname', async (req, res) => {
   const { userId, nickname } = req.body;
   if (!userId || !nickname) {
     return res.status(400).send('User ID and nickname are required');
