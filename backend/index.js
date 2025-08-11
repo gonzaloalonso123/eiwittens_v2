@@ -241,7 +241,7 @@ app.post('/payment-webhook-creapure', async (req, res) => {
         userId: meta.userId
       });
 
-      await createCreapureUser(userId, {
+      await createCreapureUser(meta.userId, {
         firstName: meta.firstName,
         lastName: meta.lastName,
         phone: meta.phone,
