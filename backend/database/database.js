@@ -1,9 +1,7 @@
-const { makeCalculations } = require("../helpers");
 const { FieldValue } = require("firebase-admin/firestore");
 const fs = require("fs/promises");
 const path = require("path");
 const { db } = require("./firebase");
-const { url } = require("inspector");
 
 const Products = db.collection("products");
 
@@ -107,12 +105,51 @@ const createCreapurePayment = async (payment) => {
       delete payment[key];
     }
   });
+
+  const referralCode = payment.referralCode || "";
+  if (referralCode) {
+    const user = await getUserByReferralCode(referralCode);
+    if (user) {
+      payment.referralUserId = user.userId;
+    } else {
+      payment.referralUserId = null;
+    }
+  }
+
   payment.createdAt = FieldValue.serverTimestamp();
   db.collection("creapure-payments").doc(payment.paymentId).set({
     ...payment,
   });
   return payment.paymentId;
 };
+
+
+const getReferralCounts = async () => {
+  const referralCounts = {};
+  const querySnapshot = await db.collection("creapure-payments").get();
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.referralUserId) {
+      if (!referralCounts[data.referralUserId]) {
+        referralCounts[data.referralUserId] = 0;
+      }
+      referralCounts[data.referralUserId]++;
+    }
+  });
+  return referralCounts;
+}
+
+const getUserByReferralCode = async (referralCode) => {
+  const querySnapshot = await db.collection("creapure-users").where("nickname", "==", referralCode).get();
+  if (querySnapshot.empty) {
+    return null;
+  }
+  const userDoc = querySnapshot.docs[0];
+  return {
+    userId: userDoc.id,
+    ...userDoc.data(),
+  };
+}
 
 const createCreapureUser = async (userId, userData) => {
   const userRef = db.collection("creapure-users").doc(userId);
@@ -193,5 +230,6 @@ module.exports = {
   createCreapurePayment,
   addNicknameToUser,
   checkIfNicknameExists,
+  getReferralCounts,
   migrate,
 };
