@@ -168,7 +168,6 @@ app.post('/create-payment-creapure', async (req, res) => {
         street,
         city,
         postal,
-        nickName,
         email,
         userId,
         offers: !!offers
