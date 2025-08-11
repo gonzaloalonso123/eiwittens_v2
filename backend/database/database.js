@@ -124,7 +124,7 @@ const createCreapureUser = async (userId, userData) => {
 };
 
 const addAmountToGoal = async (amount) => {
-  const docRef = db.collection("creapure-amount").doc(1);
+  const docRef = db.collection("creapure-amount").doc("1");
   const prices = {
     1: 28,
     2: 50,
@@ -152,7 +152,7 @@ const checkIfNicknameExists = async (nickname) => {
 };
 
 const getAmountGoal = async () => {
-  const docRef = db.collection("creapure-amount").doc(1);
+  const docRef = db.collection("creapure-amount").doc("1");
   const doc = await docRef.get();
   if (!doc.exists) {
     return 0;
