@@ -13,6 +13,8 @@ const {
   addAmountToGoal,
   getAmountGoal,
   createCreapureUser,
+  checkIfNicknameExists,
+  addNicknameToUser,
 } = require("./database/database");
 const { createBackupFile } = require("./backup");
 const multer = require("multer");
