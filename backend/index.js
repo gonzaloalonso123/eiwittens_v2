@@ -214,45 +214,64 @@ app.post('/create-payment-creapure', async (req, res) => {
 
 
 
-if (payment.status === 'paid') {
-  const meta = payment.metadata || {};
-  const address = payment.details?.shippingAddress || payment.shippingAddress || {
-    givenName: meta.firstName,
-    familyName: meta.lastName,
-    streetAndNumber: `${meta.street} ${meta.houseNumber}${meta.addition ? ' ' + meta.addition : ''}`,
-    city: meta.city,
-    postalCode: meta.postal,
-    country: meta.country
-  };
+app.post('/payment-webhook-creapure', async (req, res) => {
+  const paymentId = req.body.id;
 
-  await createCreapurePayment({
-    amount: payment.amount.value,
-    address,
-    paymentId: payment.id,
-    firstName: meta.firstName,
-    lastName: meta.lastName,
-    phone: meta.phone,
-    country: meta.country,
-    street: meta.street,
-    houseNumber: meta.houseNumber,
-    addition: meta.addition || null,
-    city: meta.city,
-    postal: meta.postal,
-    email: meta.email,
-    offers: meta.offers,
-    referralCode: meta.referralCode || null,
-    userId: meta.userId
-  });
+  if (!paymentId) {
+    res.sendStatus(400);
+    return;
+  }
 
-  await createCreapureUser(meta.userId, {
-    firstName: meta.firstName,
-    lastName: meta.lastName,
-    phone: meta.phone,
-    email: meta.email,
-  });
+  try {
+    const payment = await mollieClient.payments.get(paymentId);
+    console.log(`Payment ${paymentId} status:`, payment.status);
 
-  addAmountToGoal(parseFloat(payment.amount.value));
-}
+    if (payment.status === 'paid') {
+      const meta = payment.metadata || {};
+      const address = payment.details?.shippingAddress || payment.shippingAddress || {
+        givenName: meta.firstName,
+        familyName: meta.lastName,
+        streetAndNumber: `${meta.street} ${meta.houseNumber}${meta.addition ? ' ' + meta.addition : ''}`,
+        city: meta.city,
+        postalCode: meta.postal,
+        country: meta.country
+      };
+
+      await createCreapurePayment({
+        amount: payment.amount.value,
+        address,
+        paymentId: payment.id,
+        firstName: meta.firstName,
+        lastName: meta.lastName,
+        phone: meta.phone,
+        country: meta.country,
+        street: meta.street,
+        houseNumber: meta.houseNumber,
+        addition: meta.addition || null,
+        city: meta.city,
+        postal: meta.postal,
+        email: meta.email,
+        offers: meta.offers,
+        referralCode: meta.referralCode || null,
+        userId: meta.userId
+      });
+
+      await createCreapureUser(meta.userId, {
+        firstName: meta.firstName,
+        lastName: meta.lastName,
+        phone: meta.phone,
+        email: meta.email,
+      });
+
+      addAmountToGoal(parseFloat(payment.amount.value));
+    }
+    
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('Error handling Mollie webhook:', err);
+    res.sendStatus(500);
+  }
+});
 
 
 const GOAL = 200;
