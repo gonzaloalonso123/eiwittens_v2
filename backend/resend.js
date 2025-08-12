@@ -1,9 +1,17 @@
 import { Resend } from 'resend';
 import fs from 'fs';
-const resend = new Resend({ apiKey: process.env.RESEND_API_KEY });
 import { PDFInvoice } from '@h1dd3nsn1p3r/pdf-invoice';
+import dotenv from 'dotenv';
+dotenv.config();
+
 const logo = fs.readFileSync('./images/logo.svg', 'utf8');
 
+
+
+
+console.log("resend api key", process.env.RESEND_API_KEY);
+
+const resend = new Resend({ apiKey: process.env.RESEND_API_KEY });
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
         from: 'Acme <info@gieriggroeien.nl>',
