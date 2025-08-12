@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import fs from 'fs';
 const resend = new Resend({ apiKey: process.env.RESEND_API_KEY });
 import { PDFInvoice } from '@h1dd3nsn1p3r/pdf-invoice';
-const logo = fs.readFileSync('./images/logo.png');
+const logo = fs.readFileSync('./images/logo.svg');
 
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
@@ -89,9 +89,9 @@ export async function sendCreapureInvoice(to, invoiceData) {
     };
 
 
-    const pdfInvoice = new PDFInvoice(payload);
-    await pdfInvoice.generate();
-    const pdfBuffer = fs.readFileSync(pdfPath);
+    const invoice = new PDFInvoice(payload);
+    const pdf = await invoice.create();
+    const pdfBuffer = fs.readFileSync(pdf);
     const attachments = [
         {
             filename: `factuur-${invoiceNumber}.pdf`,
