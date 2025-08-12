@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import fs from 'fs';
 const resend = new Resend({ apiKey: process.env.RESEND_API_KEY });
 import { PDFInvoice } from '@h1dd3nsn1p3r/pdf-invoice';
-const logo = fs.readFileSync('./images/logo.svg');
+const logo = fs.readFileSync('./images/logo.svg', 'utf8');
 
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
