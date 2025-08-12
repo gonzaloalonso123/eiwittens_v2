@@ -11,7 +11,7 @@ const logo = fs.readFileSync('./images/logo.svg', 'utf8');
 
 console.log("resend api key", process.env.RESEND_API_KEY);
 
-const resend = new Resend({ apiKey: process.env.RESEND_API_KEY });
+const resend = new Resend(process.env.RESEND_API_KEY);
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
         from: 'Acme <info@gieriggroeien.nl>',
