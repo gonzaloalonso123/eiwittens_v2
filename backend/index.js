@@ -24,6 +24,7 @@ const { sendToOpenAI } = require("./ia-ingredients");
 const { createMollieClient } = require('@mollie/api-client');
 const { generateNickname } = require("./utils");
 const { randomUUID } = require("crypto");
+const { sendCreapureInvoice } = require("./resend");
 
 
 app.use(
@@ -264,8 +265,16 @@ app.post('/payment-webhook-creapure', async (req, res) => {
       });
 
       addAmountToGoal(parseFloat(payment.amount.value));
+
+      sendCreapureInvoice(meta.email, {
+        customerName: `${meta.firstName} ${meta.lastName}`,
+        customerAddress: `${address.streetAndNumber}, ${address.postalCode} ${address.city}, ${address.country}`,
+        customerEmail: meta.email,
+        amount: payment.amount.value,
+        kilograms: parseFloat(amounts[meta.amount] || 0)
+      });
     }
-    
+
     res.sendStatus(200);
   } catch (err) {
     console.error('Error handling Mollie webhook:', err);
