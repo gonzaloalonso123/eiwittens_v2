@@ -40,10 +40,11 @@ export async function sendCreapureInvoice(to, invoiceData) {
     const { netPrice, tax } = dividePriceAndTax(invoiceData.amount);
     const invoiceNumber = random6DigitCode();
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
+    const svgData = await fs.readFile('./images/logo.svg', 'utf8');
 
     const payload = {
         company: {
-            logo: await fs.readFile('./images/logo.svg', 'utf8'),
+            logo: { src: svgData, width: 100 },
             name: 'Trivita Compare Solutions',
             address: "Laakkade 444 2521XZ ‘s-Gravenhage",
             phone: 'Tel: 06 ',
@@ -136,7 +137,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
         <p><strong>Email:</strong> ${invoiceData.customerEmail}</p>
         <p><strong>Adres:</strong> ${invoiceData.customerAddress}</p>
         <p><strong>Bestelling:</strong> ${invoiceData.kilograms} kg Creapure</p>
-        <p><strong>Bedrag:</strong> €${invoiceData.amount.toFixed(2)}</p>
+        <p><strong>Bedrag:</strong> €${invoiceData.amount}</p>
         <p>Factuur is toegevoegd als bijlage.</p>
       </div>
     `;
