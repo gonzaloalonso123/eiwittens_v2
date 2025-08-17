@@ -37,7 +37,7 @@ const dividePriceAndTax = (price) => {
 };
 
 export async function sendCreapureInvoice(to, invoiceData) {
-    const { netPrice, tax } = dividePriceAndTax(invoiceData.amount);
+    const { net, tax, taxRate } = dividePriceAndTax(invoiceData.amount);
     const invoiceNumber = random6DigitCode();
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
 
@@ -48,7 +48,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             address: "Laakkade 444 2521XZ ‘s-Gravenhage",
             phone: 'Tel: 06 ',
             email: 'Mail: info@creapure.gieriggroeien.nl',
-            website: 'Web: https://www.gierigroeien.nl',
+            website: 'Web: https://www.gieriggroeien.nl',
             taxId: 'NL867169576B01',
             bank: 'NL18BUNQ2142472885',
         },
@@ -59,8 +59,8 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
         invoice: {
             number: invoiceNumber,
-            date: new Date().toISOString().split('T')[0],
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            date: '25/12/2023',
+            dueDate: '25/12/2023',
             status: 'Paid!',
             locale: 'nl-NL',
             currency: 'EUR',
@@ -68,16 +68,16 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
         items: [
             {
-                name: 'Creapure',
-                quantity: invoiceData.kilograms,
-                price: netPrice,
-                tax,
+                name: "Creapure",
+                quantity: 1,                      // total purchase
+                price: net,                       // net unit price
+                tax: taxRate                      // library expects percent, not absolute
             },
             {
-                name: 'Verzendkosten',
+                name: "Verzendkosten",
                 quantity: 1,
-                price: 4,
-                tax: 0,
+                price: 4 / 1.09,                  // net of shipping (if shipping also has 9%)
+                tax: 9
             },
         ],
         qr: {
@@ -103,7 +103,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             },
         ];
 
-        const html = `
+        const customerHtml = `
       <div style="font-family: Arial, sans-serif; color: #222;">
         <p>Hi ${invoiceData.customerName},</p>
         <p>
@@ -125,14 +125,32 @@ export async function sendCreapureInvoice(to, invoiceData) {
         await sendEmail(
             to,
             'Factuur – Creapure Crowdfundactie',
-            html,
+            customerHtml,
+            attachments
+        );
+
+        const adminHtml = `
+      <div style="font-family: Arial, sans-serif; color: #222;">
+        <h2>Nieuwe aankoop ontvangen 🎉</h2>
+        <p><strong>Klant:</strong> ${invoiceData.customerName}</p>
+        <p><strong>Email:</strong> ${invoiceData.customerEmail}</p>
+        <p><strong>Adres:</strong> ${invoiceData.customerAddress}</p>
+        <p><strong>Bestelling:</strong> ${invoiceData.kilograms} kg Creapure</p>
+        <p><strong>Bedrag:</strong> €${invoiceData.amount.toFixed(2)}</p>
+        <p>Factuur is toegevoegd als bijlage.</p>
+      </div>
+    `;
+
+        await sendEmail(
+            'info@gieriggroeien.nl',
+            `Nieuwe aankoop: ${invoiceData.customerName} (€${invoiceData.amount.toFixed(2)})`,
+            adminHtml,
             attachments
         );
     } catch (error) {
         console.error('Error sending email with attachment:', error);
         throw error;
     } finally {
-        // cleanup always
         try {
             await fs.unlink(pdfPath);
         } catch { }
