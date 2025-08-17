@@ -26,28 +26,32 @@ async function sendEmail(to, subject, html, attachments = []) {
 const random6DigitCode = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
-const dividePriceAndTax = (price) => {
-    const taxRate = 0.21;
-    const tax = (price * taxRate) / (1 + taxRate);
-    const netPrice = price - tax;
+// --- Tax calculation helper ---
+const TAX_RATE = 0.09; // 9% BTW
+
+const dividePriceAndTax = (grossPrice) => {
+    const netPrice = grossPrice / (1 + TAX_RATE);
+    const tax = grossPrice - netPrice;
     return {
-        netPrice: netPrice.toFixed(2),
-        tax: tax.toFixed(2),
+        netPrice: Number(netPrice.toFixed(2)),
+        tax: Number(tax.toFixed(2)),
     };
 };
 
 export async function sendCreapureInvoice(to, invoiceData) {
-    const { netPrice, tax } = dividePriceAndTax(invoiceData.amount);
     const invoiceNumber = random6DigitCode();
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
-    const svgData = await fs.readFile('./images/logo.svg', 'utf8');
+
+    // --- Split between product and shipping ---
+    const shippingGross = 4; // fixed shipping
+    const productGross = invoiceData.amount - shippingGross;
+
+    const product = dividePriceAndTax(productGross);
+    const shipping = dividePriceAndTax(shippingGross);
 
     const payload = {
         company: {
-            logo: svgData.replace(
-                /<svg([^>]*)>/,
-                '<svg width="120" height="60">',
-            ),
+            logo: await fs.readFile('./images/logo.svg', 'utf8'),
             name: 'Trivita Compare Solutions',
             address: "Laakkade 444 2521XZ ‘s-Gravenhage",
             phone: 'Tel: 06 ',
@@ -74,14 +78,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
             {
                 name: 'Creapure',
                 quantity: invoiceData.kilograms,
-                price: netPrice,
-                tax,
+                price: product.netPrice, // netto
+                tax: product.tax,
             },
             {
                 name: 'Verzendkosten',
                 quantity: 1,
-                price: 4,
-                tax: 0,
+                price: shipping.netPrice, // netto
+                tax: shipping.tax,
             },
         ],
         qr: {
@@ -107,6 +111,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             },
         ];
 
+        // Customer email
         const customerHtml = `
       <div style="font-family: Arial, sans-serif; color: #222;">
         <p>Hi ${invoiceData.customerName},</p>
@@ -133,6 +138,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             attachments
         );
 
+        // Admin notification
         const adminHtml = `
       <div style="font-family: Arial, sans-serif; color: #222;">
         <h2>Nieuwe aankoop ontvangen 🎉</h2>
@@ -140,14 +146,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
         <p><strong>Email:</strong> ${invoiceData.customerEmail}</p>
         <p><strong>Adres:</strong> ${invoiceData.customerAddress}</p>
         <p><strong>Bestelling:</strong> ${invoiceData.kilograms} kg Creapure</p>
-        <p><strong>Bedrag:</strong> €${invoiceData.amount}</p>
+        <p><strong>Bedrag:</strong> €${invoiceData.amount.toFixed(2)}</p>
         <p>Factuur is toegevoegd als bijlage.</p>
       </div>
     `;
 
         await sendEmail(
             'huntymonster@gmail.com',
-            `Nieuwe aankoop: ${invoiceData.customerName} (€${invoiceData.amount})`,
+            `Nieuwe aankoop: ${invoiceData.customerName} (€${invoiceData.amount.toFixed(2)})`,
             adminHtml,
             attachments
         );
