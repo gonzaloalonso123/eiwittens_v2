@@ -44,7 +44,10 @@ export async function sendCreapureInvoice(to, invoiceData) {
 
     const payload = {
         company: {
-            logo: { src: svgData, width: 100 },
+            logo: svgData.replace(
+                /<svg([^>]*)>/,
+                '<svg$1 width="120" height="60">',
+            ),
             name: 'Trivita Compare Solutions',
             address: "Laakkade 444 2521XZ ‘s-Gravenhage",
             phone: 'Tel: 06 ',
