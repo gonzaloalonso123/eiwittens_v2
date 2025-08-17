@@ -5,16 +5,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const logo = fs.readFileSync('./images/logo.svg', 'utf8');
-
-
-
-
 console.log("resend api key", process.env.RESEND_API_KEY);
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
-        from: 'Acme <info@gieriggroeien.nl>',
+        from: 'Acme <info@creapure.gieriggroeien.nl>',
         to: [to],
         subject: subject,
         html: html,
@@ -53,7 +49,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             name: "Trivita Compare Solutions",
             address: "Laakkade 444 2521XZ ‘s-Gravenhage",
             phone: "Tel: 06 ",
-            email: "Mail: info@gieriggroeien.nl",
+            email: "Mail: info@creapure.gieriggroeien.nl",
             website: "Web: https://www.gierigroeien.nl",
             taxId: "NL867169576B01",
             bank: "NL18BUNQ2142472885",
