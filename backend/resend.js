@@ -8,7 +8,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
-        from: 'Acme <info@creapure.gieriggroeien.nl>',
+        from: 'Gierig Groeien <info@creapure.gieriggroeien.nl>',
         to: [to],
         subject,
         html,
@@ -37,7 +37,7 @@ const dividePriceAndTax = (price) => {
 };
 
 export async function sendCreapureInvoice(to, invoiceData) {
-    const { net, tax, taxRate } = dividePriceAndTax(invoiceData.amount);
+    const { netPrice, tax } = dividePriceAndTax(invoiceData.amount);
     const invoiceNumber = random6DigitCode();
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
 
@@ -59,8 +59,8 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
         invoice: {
             number: invoiceNumber,
-            date: '25/12/2023',
-            dueDate: '25/12/2023',
+            date: new Date().toLocaleDateString('nl-NL'),
+            dueDate: new Date().toLocaleDateString('nl-NL'),
             status: 'Paid!',
             locale: 'nl-NL',
             currency: 'EUR',
@@ -68,16 +68,16 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
         items: [
             {
-                name: "Creapure",
-                quantity: 1,                      // total purchase
-                price: net,                       // net unit price
-                tax: taxRate                      // library expects percent, not absolute
+                name: 'Creapure',
+                quantity: invoiceData.kilograms,
+                price: netPrice,
+                tax,
             },
             {
-                name: "Verzendkosten",
+                name: 'Verzendkosten',
                 quantity: 1,
-                price: 4 / 1.09,                  // net of shipping (if shipping also has 9%)
-                tax: 9
+                price: 4,
+                tax: 0,
             },
         ],
         qr: {
