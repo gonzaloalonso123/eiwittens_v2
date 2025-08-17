@@ -1,40 +1,38 @@
 import { Resend } from 'resend';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { PDFInvoice } from '@h1dd3nsn1p3r/pdf-invoice';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const logo = fs.readFileSync('./images/logo.svg', 'utf8');
-console.log("resend api key", process.env.RESEND_API_KEY);
-
 const resend = new Resend(process.env.RESEND_API_KEY);
+
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
         from: 'Acme <info@creapure.gieriggroeien.nl>',
         to: [to],
-        subject: subject,
-        html: html,
-        attachments: attachments,
+        subject,
+        html,
+        attachments,
     });
 
     if (error) {
-        return console.error({ error });
+        console.error({ error });
+        throw error;
     }
 
     console.log({ data });
 }
 
-const random6DigitCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-};
+const random6DigitCode = () =>
+    Math.floor(100000 + Math.random() * 900000).toString();
 
 const dividePriceAndTax = (price) => {
     const taxRate = 0.21;
-    const tax = price * taxRate / (1 + taxRate);
+    const tax = (price * taxRate) / (1 + taxRate);
     const netPrice = price - tax;
     return {
         netPrice: netPrice.toFixed(2),
-        tax: tax.toFixed(2)
+        tax: tax.toFixed(2),
     };
 };
 
@@ -45,14 +43,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
 
     const payload = {
         company: {
-            logo: logo,
-            name: "Trivita Compare Solutions",
+            logo: await fs.readFile('./images/logo.svg', 'utf8'),
+            name: 'Trivita Compare Solutions',
             address: "Laakkade 444 2521XZ ‘s-Gravenhage",
-            phone: "Tel: 06 ",
-            email: "Mail: info@creapure.gieriggroeien.nl",
-            website: "Web: https://www.gierigroeien.nl",
-            taxId: "NL867169576B01",
-            bank: "NL18BUNQ2142472885",
+            phone: 'Tel: 06 ',
+            email: 'Mail: info@creapure.gieriggroeien.nl',
+            website: 'Web: https://www.gierigroeien.nl',
+            taxId: 'NL867169576B01',
+            bank: 'NL18BUNQ2142472885',
         },
         customer: {
             name: invoiceData.customerName,
@@ -61,50 +59,51 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
         invoice: {
             number: invoiceNumber,
-            date: "25/12/2023",
-            dueDate: "25/12/2023",
-            status: "Paid!",
-            locale: "nl-NL",
-            currency: "EUR",
+            date: new Date().toISOString().split('T')[0],
+            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: 'Paid!',
+            locale: 'nl-NL',
+            currency: 'EUR',
             path: pdfPath,
         },
         items: [
             {
-                name: "Creapure",
+                name: 'Creapure',
                 quantity: invoiceData.kilograms,
                 price: netPrice,
-                tax: tax,
+                tax,
             },
             {
-                name: "Verzendkosten",
+                name: 'Verzendkosten',
                 quantity: 1,
                 price: 4,
                 tax: 0,
             },
         ],
         qr: {
-            data: "https://www.gierigroeien.nl",
+            data: 'https://www.gieriggroeien.nl',
             width: 50,
         },
         note: {
-            text: "Thank you for your business.",
+            text: 'Thank you for your business.',
             italic: false,
-        }
+        },
     };
 
-
     const invoice = new PDFInvoice(payload);
-    const pdf = await invoice.create();
-    const pdfBuffer = fs.readFileSync(pdf);
-    const attachments = [
-        {
-            filename: `factuur-${invoiceNumber}.pdf`,
-            content: pdfBuffer,
-            type: 'application/pdf',
-        }
-    ];
+    const pdfFilePath = await invoice.create();
 
-    const html = `
+    try {
+        const pdfBuffer = await fs.readFile(pdfFilePath);
+        const attachments = [
+            {
+                filename: `factuur-${invoiceNumber}.pdf`,
+                content: pdfBuffer.toString('base64'),
+                type: 'application/pdf',
+            },
+        ];
+
+        const html = `
       <div style="font-family: Arial, sans-serif; color: #222;">
         <p>Hi ${invoiceData.customerName},</p>
         <p>
@@ -123,14 +122,19 @@ export async function sendCreapureInvoice(to, invoiceData) {
       </div>
     `;
 
-    try {
-        await sendEmail(to, 'Factuur – Creapure Crowdfundactie', html, attachments);
-        fs.unlinkSync(pdfPath);
+        await sendEmail(
+            to,
+            'Factuur – Creapure Crowdfundactie',
+            html,
+            attachments
+        );
     } catch (error) {
         console.error('Error sending email with attachment:', error);
-        if (fs.existsSync(pdfPath)) {
-            fs.unlinkSync(pdfPath);
-        }
         throw error;
+    } finally {
+        // cleanup always
+        try {
+            await fs.unlink(pdfPath);
+        } catch { }
     }
 }
