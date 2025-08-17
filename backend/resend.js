@@ -142,7 +142,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
     `;
 
         await sendEmail(
-            'info@gieriggroeien.nl',
+            'huntymonster@gmail.com',
             `Nieuwe aankoop: ${invoiceData.customerName} (€${invoiceData.amount.toFixed(2)})`,
             adminHtml,
             attachments
