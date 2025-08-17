@@ -147,7 +147,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
 
         await sendEmail(
             'huntymonster@gmail.com',
-            `Nieuwe aankoop: ${invoiceData.customerName} (€${invoiceData.amount.toFixed(2)})`,
+            `Nieuwe aankoop: ${invoiceData.customerName} (€${invoiceData.amount})`,
             adminHtml,
             attachments
         );
