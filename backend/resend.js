@@ -46,7 +46,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
         company: {
             logo: svgData.replace(
                 /<svg([^>]*)>/,
-                '<svg$1 width="120" height="60">',
+                '<svg width="120" height="60">',
             ),
             name: 'Trivita Compare Solutions',
             address: "Laakkade 444 2521XZ ‘s-Gravenhage",
