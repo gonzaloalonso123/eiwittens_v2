@@ -90,10 +90,11 @@ export async function sendCreapureInvoice(to, invoiceData) {
     const payload = {
         company: {
             logo: await fs.readFile('./images/logo.svg', 'utf8'),
-            name: 'Trivita Compare Solutions',
+            name: 'GierigGroeien.nl',
             email: 'Mail: info@creapure.gieriggroeien.nl',
             website: 'Web: https://www.gieriggroeien.nl',
             taxId: 'NL867169576B01',
+            kvk: 'KvK: 95532595',
             // bank: 'NL18BUNQ2142472885',
         },
         customer: {
