@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import fs from 'fs/promises';
 import { PDFInvoice } from '@h1dd3nsn1p3r/pdf-invoice';
 import dotenv from 'dotenv';
+import { title } from 'process';
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -90,12 +91,10 @@ export async function sendCreapureInvoice(to, invoiceData) {
         company: {
             logo: await fs.readFile('./images/logo.svg', 'utf8'),
             name: 'Trivita Compare Solutions',
-            address: "Laakkade 444 2521XZ ‘s-Gravenhage",
-            phone: 'Tel: 06 ',
             email: 'Mail: info@creapure.gieriggroeien.nl',
             website: 'Web: https://www.gieriggroeien.nl',
             taxId: 'NL867169576B01',
-            bank: 'NL18BUNQ2142472885',
+            // bank: 'NL18BUNQ2142472885',
         },
         customer: {
             name: invoiceData.customerName,
@@ -103,6 +102,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             email: invoiceData.customerEmail,
         },
         invoice: {
+            title: 'Factuur',
             number: invoiceNumber,
             date: new Date().toLocaleDateString('nl-NL'),
             dueDate: new Date().toLocaleDateString('nl-NL'),
@@ -130,7 +130,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             width: 50,
         },
         note: {
-            text: 'Thank you for your business.',
+            text: 'Bedankt voor je deelname.',
             italic: false,
         },
     };
