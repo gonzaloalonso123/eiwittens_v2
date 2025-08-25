@@ -45,7 +45,7 @@ export const amounts = {
 export async function sendCreapureInvoice(to, invoiceData) {
     const invoiceNumber = random6DigitCode();
     const amount = Math.min(5, Math.max(1, Number(invoiceData.amount)));
-    const { base, delivery } = amounts[amount.toString()];
+    const { base, delivery } = amounts[amount];
 
     const grossTotal = base + delivery;
     const shippingGross = delivery;
