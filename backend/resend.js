@@ -104,7 +104,6 @@ export async function sendCreapureInvoice(to, invoiceData) {
         invoice: {
             number: invoiceNumber,
             date: new Date().toLocaleDateString('nl-NL'),
-            dueDate: new Date().toLocaleDateString('nl-NL'),
             status: 'Betaald!',
             locale: 'nl-NL',
             currency: 'EUR',
@@ -146,10 +145,10 @@ export async function sendCreapureInvoice(to, invoiceData) {
             item: "Artikel",
             quantity: "Aantal",
             price: "Prijs",
-            tax: "Belasting",
+            tax: "BTW",
             total: "Totaal",
             subTotal: "Subtotaal",
-            totalTax: "Totaal Belasting",
+            totalTax: "Totaal BTW",
         },
     };
     const invoice = new PDFInvoice(payload, config);
