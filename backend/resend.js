@@ -43,15 +43,15 @@ export const pricingTiers = {
     5: { totalGross: 110.00, productGross: 110.00, shippingGross: 0.00 },
 };
 
-// Convert gross to net (for display purposes only)
-const grossToNet = (gross) => round2(gross / (1 + TAX_RATE));
+const grossToNet = (gross) => round2(gross / (1 + TAX_RATE)); // Net from gross
+const netToGross = (net) => round2(net * (1 + TAX_RATE)); // Gross from net
 
 export async function sendCreapureInvoice(to, invoiceData) {
     const invoiceNumber = random6DigitCode();
     const amount = Math.min(5, Math.max(1, Number(invoiceData.amount)));
     const pricing = pricingTiers[amount];
     const quantity = parseQty(invoiceData.amount);
-    
+
     // Calculate net prices for display (the PDF library will add tax back)
     const productNetTotal = grossToNet(pricing.productGross);
     const productUnitNet = round2(productNetTotal / quantity);
@@ -66,14 +66,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
     console.log('Shipping unit net:', shippingUnitNet);
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
-    
+
     // Build items array
     const items = [
         {
             name: 'Creapure',
             quantity,
-            price: productUnitNet,
-            tax: TAX_RATE_PERCENT,
+            price: productUnitNet, // Net price before tax
+            tax: TAX_RATE_PERCENT, // Apply tax here for final gross calculation
         }
     ];
 
@@ -82,8 +82,8 @@ export async function sendCreapureInvoice(to, invoiceData) {
         items.push({
             name: 'Verzendkosten',
             quantity: 1,
-            price: shippingUnitNet,
-            tax: TAX_RATE_PERCENT,
+            price: shippingUnitNet, // Net shipping price before tax
+            tax: TAX_RATE_PERCENT, // Apply tax here for final gross calculation
         });
     }
 
@@ -122,12 +122,12 @@ export async function sendCreapureInvoice(to, invoiceData) {
     };
 
     console.log('Generating invoice PDF with payload:', JSON.stringify(payload, null, 2));
-    
+
     // Verify the calculation will work
-    const calculatedProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
-    const calculatedShippingGross = pricing.shippingGross > 0 ? round2(shippingUnitNet * (1 + TAX_RATE)) : 0;
+    const calculatedProductGross = round2(netToGross(productUnitNet) * quantity);
+    const calculatedShippingGross = pricing.shippingGross > 0 ? round2(netToGross(shippingUnitNet)) : 0;
     const calculatedTotal = round2(calculatedProductGross + calculatedShippingGross);
-    
+
     console.log('Verification:');
     console.log('Expected total:', pricing.totalGross);
     console.log('Calculated total:', calculatedTotal);
