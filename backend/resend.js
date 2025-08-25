@@ -76,6 +76,23 @@ export async function sendCreapureInvoice(to, invoiceData) {
 
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
+    const items = [
+        {
+            name: 'Creapure',
+            quantity,
+            price: productUnitNet,
+            tax: TAX_RATE_PERCENT,
+        }
+    ];
+
+    if (shippingGross > 0) {
+        items.push({
+            name: 'Verzendkosten',
+            quantity: 1,
+            price: shippingUnitNet,
+            tax: TAX_RATE_PERCENT,
+        });
+    }
 
     const payload = {
         company: {
@@ -100,21 +117,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             currency: 'EUR',
             path: pdfPath,
         },
-        items: [
-            {
-                name: 'Creapure',
-                quantity,
-                price: productUnitNet,
-                tax: TAX_RATE_PERCENT,
-            },
-            // Only add shipping item if there's actually a shipping cost
-            ...(shippingGross > 0 ? [{
-                name: 'Verzendkosten',
-                quantity: 1,
-                price: shippingUnitNet,
-                tax: TAX_RATE_PERCENT,
-            }] : []),
-        ],
+        items: items,
         qr: {
             data: 'https://www.gieriggroeien.nl',
             width: 50,
@@ -125,7 +128,12 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
     };
 
-    console.log('Generating invoice PDF with payload:', payload);
+    console.log('Generating invoice PDF with payload:', JSON.stringify(payload, null, 2));
+    console.log('Items array:', items);
+    console.log('Product unit net:', productUnitNet);
+    console.log('Shipping unit net:', shippingUnitNet);
+    console.log('Quantity:', quantity);
+    console.log('Shipping gross:', shippingGross);
 
 
     const config = {
