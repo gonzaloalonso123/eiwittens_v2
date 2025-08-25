@@ -35,3 +35,11 @@ export const generateNickname = (name) => {
     const firstLetter = name.charAt(0).toUpperCase();
     return `${name}${namesForLetters[firstLetter]}${randomNumber()}` || "de Onbekende";
 }
+
+export function generateInvoiceNumber() {
+    const timestamp = Date.now().toString()
+    const random = Math.floor(Math.random() * 1000)
+        .toString()
+        .padStart(3, "0")
+    return timestamp.slice(-6) + random
+}
