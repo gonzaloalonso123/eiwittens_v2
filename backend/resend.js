@@ -21,18 +21,6 @@ async function sendEmail(to, subject, html, attachments = []) {
 }
 
 const random6DigitCode = () => Math.floor(100000 + Math.random() * 900000).toString();
-const TAX_RATE_PERCENT = 9;
-const TAX_RATE = TAX_RATE_PERCENT / 100;
-const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
-
-const parseQty = (val) => {
-    if (val === null || val === undefined) return 1;
-    const str = String(val).trim().replace(',', '.');
-    const num = Number(str);
-    return Number.isFinite(num) && num > 0 ? num : 1;
-};
-
-const netFromGross = (gross) => round2(Number(gross) / (1 + TAX_RATE));
 
 // Simple pricing structure - just the totals we want
 export const pricingTiers = {
@@ -43,8 +31,12 @@ export const pricingTiers = {
     5: { totalGross: 110.00, productGross: 110.00, shippingGross: 0.00 },
 };
 
-const grossToNet = (gross) => round2(gross / (1 + TAX_RATE)); // Net from gross
-const netToGross = (net) => round2(net * (1 + TAX_RATE)); // Gross from net
+const parseQty = (val) => {
+    if (val === null || val === undefined) return 1;
+    const str = String(val).trim().replace(',', '.');
+    const num = Number(str);
+    return Number.isFinite(num) && num > 0 ? num : 1;
+};
 
 export async function sendCreapureInvoice(to, invoiceData) {
     const invoiceNumber = random6DigitCode();
@@ -52,32 +44,22 @@ export async function sendCreapureInvoice(to, invoiceData) {
     const pricing = pricingTiers[amount];
     const quantity = parseQty(invoiceData.amount);
 
-    // Use gross prices directly from pricingTiers
     const productGrossTotal = pricing.productGross;
     const shippingGrossTotal = pricing.shippingGross;
-
-    // Calculate net prices for PDF display (before tax, as PDFInvoice will add tax)
-    const productNetTotal = grossToNet(productGrossTotal);
-    const productUnitNet = round2(productNetTotal / quantity);
-    const shippingUnitNet = grossToNet(shippingGrossTotal);
+    const totalGross = productGrossTotal + shippingGrossTotal;
 
     console.log('Pricing calculation:');
     console.log('Amount tier:', amount);
     console.log('Expected total gross:', pricing.totalGross);
     console.log('Product gross total:', productGrossTotal);
     console.log('Shipping gross total:', shippingGrossTotal);
-    console.log('Product unit net (for PDF):', productUnitNet);
-    console.log('Shipping unit net (for PDF):', shippingUnitNet);
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
-
-    // Build items array for PDFInvoice
     const items = [
         {
             name: 'Creapure',
             quantity,
-            price: productUnitNet, // Net price before tax
-            tax: TAX_RATE_PERCENT, // PDFInvoice will apply this to get gross
+            price: productGrossTotal / quantity, // Just show the gross price directly
         }
     ];
 
@@ -85,8 +67,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
         items.push({
             name: 'Verzendkosten',
             quantity: 1,
-            price: shippingUnitNet, // Net price before tax
-            tax: TAX_RATE_PERCENT,
+            price: shippingGrossTotal,
         });
     }
 
@@ -126,15 +107,6 @@ export async function sendCreapureInvoice(to, invoiceData) {
 
     console.log('Generating invoice PDF with payload:', JSON.stringify(payload, null, 2));
 
-    // Verify the totals using gross prices directly
-    const calculatedTotal = round2(productGrossTotal + shippingGrossTotal);
-
-    console.log('Verification:');
-    console.log('Expected total:', pricing.totalGross);
-    console.log('Calculated total:', calculatedTotal);
-    console.log('Difference:', round2(pricing.totalGross - calculatedTotal));
-    console.log('Match:', Math.abs(pricing.totalGross - calculatedTotal) < 0.01 ? '✅' : '❌');
-
     const config = {
         string: {
             invoice: "F A C T U U R",
@@ -146,10 +118,9 @@ export async function sendCreapureInvoice(to, invoiceData) {
             item: "Artikel",
             quantity: "Aantal",
             price: "Prijs",
-            tax: "BTW",
             total: "Totaal",
             subTotal: "Subtotaal",
-            totalTax: "Totaal BTW",
+            totalTax: "Totaal BTW", // This can be removed if not needed
         },
     };
     const invoice = new PDFInvoice(payload, config);
@@ -196,14 +167,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
         <p><strong>Email:</strong> ${invoiceData.customerEmail}</p>
         <p><strong>Adres:</strong> ${invoiceData.customerAddress}</p>
         <p><strong>Bestelling:</strong> ${quantity} kg Creapure</p>
-        <p><strong>Bedrag:</strong> €${pricing.totalGross.toFixed(2)}</p>
+        <p><strong>Bedrag:</strong> €${totalGross.toFixed(2)}</p>
         <p>Factuur is toegevoegd als bijlage.</p>
       </div>
     `;
 
         await sendEmail(
             'huntymonster@gmail.com',
-            `Nieuwe aankoop: ${invoiceData.customerName} (€${pricing.totalGross.toFixed(2)})`,
+            `Nieuwe aankoop: ${invoiceData.customerName} (€${totalGross.toFixed(2)})`,
             adminHtml,
             attachments
         );
