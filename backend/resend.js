@@ -65,21 +65,13 @@ export async function sendCreapureInvoice(to, invoiceData) {
         productUnitNet = round2(productUnitNet + perUnitNetAdj);
         const afterProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
         const remain = round2(grossTotal - (afterProductGross + recalcShippingGross));
-        if (remain !== 0) {
+        if (remain !== 0 && shippingGross > 0) {
             const shipNetAdj = round2(remain / (1 + TAX_RATE));
-            const newShippingUnitNet = round2(shippingUnitNet + shipNetAdj);
-
-            // Ensure shipping cost never goes below 0
-            if (newShippingUnitNet < 0) {
-                // If shipping would go negative, add the difference back to the product
-                const negativeAmount = -newShippingUnitNet;
-                const negativeGrossAmount = round2(negativeAmount * (1 + TAX_RATE));
-                const negativeNetPerUnit = round2(negativeGrossAmount / quantity);
-                productUnitNet = round2(productUnitNet + negativeNetPerUnit);
-                shippingUnitNet = 0;
-            } else {
-                shippingUnitNet = newShippingUnitNet;
-            }
+            shippingUnitNet = round2(shippingUnitNet + shipNetAdj);
+        } else if (remain !== 0) {
+            // If no shipping, add remaining difference to product
+            const remainNetPerUnit = round2(remain / (1 + TAX_RATE) / quantity);
+            productUnitNet = round2(productUnitNet + remainNetPerUnit);
         }
     }
 
@@ -116,12 +108,13 @@ export async function sendCreapureInvoice(to, invoiceData) {
                 price: productUnitNet,
                 tax: TAX_RATE_PERCENT,
             },
-            {
+            // Only add shipping item if there's actually a shipping cost
+            ...(shippingGross > 0 ? [{
                 name: 'Verzendkosten',
                 quantity: 1,
                 price: shippingUnitNet,
                 tax: TAX_RATE_PERCENT,
-            },
+            }] : []),
         ],
         qr: {
             data: 'https://www.gieriggroeien.nl',
