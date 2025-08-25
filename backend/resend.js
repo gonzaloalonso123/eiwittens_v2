@@ -34,29 +34,40 @@ const parseQty = (val) => {
 
 const netFromGross = (gross) => round2(Number(gross) / (1 + TAX_RATE));
 
-export const amounts = {
-    1: { base: 24.00, delivery: 4.00, productNet: 19.63, shippingNet: 3.67 },
-    2: { base: 46.00, delivery: 4.00, productNet: 37.61, shippingNet: 3.67 },
-    3: { base: 66.00, delivery: 4.00, productNet: 55.96, shippingNet: 3.67 },
-    4: { base: 88.00, delivery: 0.00, productNet: 80.73, shippingNet: 0.00 },
-    5: { base: 110.00, delivery: 0.00, productNet: 100.92, shippingNet: 0.00 },
+// Simple pricing structure - just the totals we want
+export const pricingTiers = {
+    1: { totalGross: 28.00, productGross: 24.00, shippingGross: 4.00 },
+    2: { totalGross: 50.00, productGross: 46.00, shippingGross: 4.00 },
+    3: { totalGross: 70.00, productGross: 66.00, shippingGross: 4.00 },
+    4: { totalGross: 88.00, productGross: 88.00, shippingGross: 0.00 },
+    5: { totalGross: 110.00, productGross: 110.00, shippingGross: 0.00 },
 };
+
+// Convert gross to net (for display purposes only)
+const grossToNet = (gross) => round2(gross / (1 + TAX_RATE));
 
 export async function sendCreapureInvoice(to, invoiceData) {
     const invoiceNumber = random6DigitCode();
     const amount = Math.min(5, Math.max(1, Number(invoiceData.amount)));
-    const { base, delivery, productNet, shippingNet } = amounts[amount];
-
-    const grossTotal = base + delivery;
-    const shippingGross = delivery;
+    const pricing = pricingTiers[amount];
     const quantity = parseQty(invoiceData.amount);
     
-    // Use hardcoded net values to ensure exact totals
-    const productUnitNet = round2(productNet / quantity);
-    const shippingUnitNet = shippingNet;
+    // Calculate net prices for display (the PDF library will add tax back)
+    const productNetTotal = grossToNet(pricing.productGross);
+    const productUnitNet = round2(productNetTotal / quantity);
+    const shippingUnitNet = grossToNet(pricing.shippingGross);
 
+    console.log('Pricing calculation:');
+    console.log('Amount tier:', amount);
+    console.log('Expected total gross:', pricing.totalGross);
+    console.log('Product gross:', pricing.productGross);
+    console.log('Shipping gross:', pricing.shippingGross);
+    console.log('Product unit net:', productUnitNet);
+    console.log('Shipping unit net:', shippingUnitNet);
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
+    
+    // Build items array
     const items = [
         {
             name: 'Creapure',
@@ -66,7 +77,8 @@ export async function sendCreapureInvoice(to, invoiceData) {
         }
     ];
 
-    if (shippingGross > 0) {
+    // Only add shipping if there's a cost
+    if (pricing.shippingGross > 0) {
         items.push({
             name: 'Verzendkosten',
             quantity: 1,
@@ -110,20 +122,17 @@ export async function sendCreapureInvoice(to, invoiceData) {
     };
 
     console.log('Generating invoice PDF with payload:', JSON.stringify(payload, null, 2));
-    console.log('Items array:', items);
-    console.log('Product unit net:', productUnitNet);
-    console.log('Shipping unit net:', shippingUnitNet);
-    console.log('Quantity:', quantity);
-    console.log('Shipping gross:', shippingGross);
     
-    // Verify totals
+    // Verify the calculation will work
     const calculatedProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
-    const calculatedShippingGross = round2(shippingUnitNet * (1 + TAX_RATE));
+    const calculatedShippingGross = pricing.shippingGross > 0 ? round2(shippingUnitNet * (1 + TAX_RATE)) : 0;
     const calculatedTotal = round2(calculatedProductGross + calculatedShippingGross);
+    
     console.log('Verification:');
-    console.log('Expected total:', grossTotal);
+    console.log('Expected total:', pricing.totalGross);
     console.log('Calculated total:', calculatedTotal);
-    console.log('Match:', calculatedTotal === grossTotal ? '✅' : '❌');
+    console.log('Difference:', round2(pricing.totalGross - calculatedTotal));
+    console.log('Match:', Math.abs(pricing.totalGross - calculatedTotal) < 0.01 ? '✅' : '❌');
 
 
     const config = {
@@ -187,14 +196,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
         <p><strong>Email:</strong> ${invoiceData.customerEmail}</p>
         <p><strong>Adres:</strong> ${invoiceData.customerAddress}</p>
         <p><strong>Bestelling:</strong> ${quantity} kg Creapure</p>
-        <p><strong>Bedrag:</strong> €${grossTotal.toFixed(2)}</p>
+        <p><strong>Bedrag:</strong> €${pricing.totalGross.toFixed(2)}</p>
         <p>Factuur is toegevoegd als bijlage.</p>
       </div>
     `;
 
         await sendEmail(
             'huntymonster@gmail.com',
-            `Nieuwe aankoop: ${invoiceData.customerName} (€${grossTotal.toFixed(2)})`,
+            `Nieuwe aankoop: ${invoiceData.customerName} (€${pricing.totalGross.toFixed(2)})`,
             adminHtml,
             attachments
         );
