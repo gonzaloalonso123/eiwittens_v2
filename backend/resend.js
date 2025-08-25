@@ -36,10 +36,10 @@ const netFromGross = (gross) => round2(Number(gross) / (1 + TAX_RATE));
 
 export const amounts = {
     1: { base: 24.00, delivery: 4.00 },
-    2: { base: 23.00, delivery: 4.00 },
-    3: { base: 22.00, delivery: 4.00 },
-    4: { base: 22.00, delivery: 0.00 },
-    5: { base: 22.00, delivery: 0.00 },
+    2: { base: 46.00, delivery: 4.00 },
+    3: { base: 66.00, delivery: 4.00 },
+    4: { base: 88.00, delivery: 0.00 },
+    5: { base: 110.00, delivery: 0.00 },
 };
 
 export async function sendCreapureInvoice(to, invoiceData) {
