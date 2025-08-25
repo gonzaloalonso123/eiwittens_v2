@@ -35,44 +35,25 @@ const parseQty = (val) => {
 const netFromGross = (gross) => round2(Number(gross) / (1 + TAX_RATE));
 
 export const amounts = {
-    1: { base: 24.00, delivery: 4.00 },
-    2: { base: 46.00, delivery: 4.00 },
-    3: { base: 66.00, delivery: 4.00 },
-    4: { base: 88.00, delivery: 0.00 },
-    5: { base: 110.00, delivery: 0.00 },
+    1: { base: 24.00, delivery: 4.00, productNet: 19.63, shippingNet: 3.67 },
+    2: { base: 46.00, delivery: 4.00, productNet: 37.61, shippingNet: 3.67 },
+    3: { base: 66.00, delivery: 4.00, productNet: 55.96, shippingNet: 3.67 },
+    4: { base: 88.00, delivery: 0.00, productNet: 80.73, shippingNet: 0.00 },
+    5: { base: 110.00, delivery: 0.00, productNet: 100.92, shippingNet: 0.00 },
 };
 
 export async function sendCreapureInvoice(to, invoiceData) {
     const invoiceNumber = random6DigitCode();
     const amount = Math.min(5, Math.max(1, Number(invoiceData.amount)));
-    const { base, delivery } = amounts[amount];
+    const { base, delivery, productNet, shippingNet } = amounts[amount];
 
     const grossTotal = base + delivery;
     const shippingGross = delivery;
-
-    let productGross = base;
     const quantity = parseQty(invoiceData.amount);
-    const productNetTotal = netFromGross(productGross);
-    let productUnitNet = round2(productNetTotal / quantity);
-    let shippingUnitNet = netFromGross(shippingGross);
-    const recalcProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
-    const recalcShippingGross = round2(shippingUnitNet * (1 + TAX_RATE) * 1);
-    let diff = round2(grossTotal - (recalcProductGross + recalcShippingGross));
-
-    if (diff !== 0) {
-        const perUnitGrossAdj = round2(diff / quantity);
-        const perUnitNetAdj = round2(perUnitGrossAdj / (1 + TAX_RATE));
-        productUnitNet = round2(productUnitNet + perUnitNetAdj);
-        const afterProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
-        const remain = round2(grossTotal - (afterProductGross + recalcShippingGross));
-        if (remain !== 0 && shippingGross > 0) {
-            const shipNetAdj = round2(remain / (1 + TAX_RATE));
-            shippingUnitNet = round2(shippingUnitNet + shipNetAdj);
-        } else if (remain !== 0) {
-            const remainNetPerUnit = round2(remain / (1 + TAX_RATE) / quantity);
-            productUnitNet = round2(productUnitNet + remainNetPerUnit);
-        }
-    }
+    
+    // Use hardcoded net values to ensure exact totals
+    const productUnitNet = round2(productNet / quantity);
+    const shippingUnitNet = shippingNet;
 
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
@@ -134,6 +115,15 @@ export async function sendCreapureInvoice(to, invoiceData) {
     console.log('Shipping unit net:', shippingUnitNet);
     console.log('Quantity:', quantity);
     console.log('Shipping gross:', shippingGross);
+    
+    // Verify totals
+    const calculatedProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
+    const calculatedShippingGross = round2(shippingUnitNet * (1 + TAX_RATE));
+    const calculatedTotal = round2(calculatedProductGross + calculatedShippingGross);
+    console.log('Verification:');
+    console.log('Expected total:', grossTotal);
+    console.log('Calculated total:', calculatedTotal);
+    console.log('Match:', calculatedTotal === grossTotal ? '✅' : '❌');
 
 
     const config = {
