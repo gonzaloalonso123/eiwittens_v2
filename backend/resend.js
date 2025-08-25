@@ -5,8 +5,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-// ===== Helpers =====
 async function sendEmail(to, subject, html, attachments = []) {
     const { data, error } = await resend.emails.send({
         from: 'Gierig Groeien <info@creapure.gieriggroeien.nl>',
@@ -15,7 +13,6 @@ async function sendEmail(to, subject, html, attachments = []) {
         html,
         attachments,
     });
-
     if (error) {
         console.error({ error });
         throw error;
@@ -23,12 +20,9 @@ async function sendEmail(to, subject, html, attachments = []) {
     console.log({ data });
 }
 
-const random6DigitCode = () =>
-    Math.floor(100000 + Math.random() * 900000).toString();
-
+const random6DigitCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 const TAX_RATE_PERCENT = 9;
 const TAX_RATE = TAX_RATE_PERCENT / 100;
-
 const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 
 const parseQty = (val) => {
@@ -59,26 +53,17 @@ export async function sendCreapureInvoice(to, invoiceData) {
     let productGross = base;
     const quantity = parseQty(invoiceData.kilograms);
 
-    // ---- Convert gross → net (per unit) so the lib can add 9% VAT from percent ----
-    // product: divide total product gross by (1+VAT) to get net total, then per-unit
     const productNetTotal = netFromGross(productGross);
     let productUnitNet = round2(productNetTotal / quantity);
-
-    // shipping: quantity is 1
     let shippingUnitNet = netFromGross(shippingGross);
-
-    // ---- Re-check totals & apply tiny rounding correction if ever needed ----
     const recalcProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
     const recalcShippingGross = round2(shippingUnitNet * (1 + TAX_RATE) * 1);
     let diff = round2(grossTotal - (recalcProductGross + recalcShippingGross));
 
     if (diff !== 0) {
-        // Distribute the rounding diff into the product unit net
         const perUnitGrossAdj = round2(diff / quantity);
         const perUnitNetAdj = round2(perUnitGrossAdj / (1 + TAX_RATE));
         productUnitNet = round2(productUnitNet + perUnitNetAdj);
-
-        // Recompute; if there is still a 1-cent remainder, push it into shipping
         const afterProductGross = round2(productUnitNet * (1 + TAX_RATE) * quantity);
         const remain = round2(grossTotal - (afterProductGross + recalcShippingGross));
         if (remain !== 0) {
@@ -166,8 +151,6 @@ export async function sendCreapureInvoice(to, invoiceData) {
                 type: 'application/pdf',
             },
         ];
-
-        // Customer email
         const customerHtml = `
       <div style="font-family: Arial, sans-serif; color: #222;">
         <p>Hi ${invoiceData.customerName},</p>
@@ -193,8 +176,6 @@ export async function sendCreapureInvoice(to, invoiceData) {
             customerHtml,
             attachments
         );
-
-        // Admin notification
         const adminHtml = `
       <div style="font-family: Arial, sans-serif; color: #222;">
         <h2>Nieuwe aankoop ontvangen 🎉</h2>
