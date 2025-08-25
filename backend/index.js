@@ -131,10 +131,12 @@ require('dotenv').config();
 
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
-const amounts = {
+export const amounts = {
   "1": "28.00",
   "2": "50.00",
   "3": "70.00",
+  "4": "88.00",
+  "5" : "110.00"
 }
 
 app.post('/create-payment-creapure', async (req, res) => {
@@ -150,7 +152,7 @@ app.post('/create-payment-creapure', async (req, res) => {
     country,
     street,
     houseNumber,
-    addition, // <-- new
+    addition,
     city,
     postal,
     offers,
@@ -183,6 +185,7 @@ app.post('/create-payment-creapure', async (req, res) => {
         postal,
         email,
         userId,
+        amount,
         offers: !!offers
       },
       description: description || 'Creapure Payment',
@@ -264,13 +267,13 @@ app.post('/payment-webhook-creapure', async (req, res) => {
         email: meta.email,
       });
 
-      addAmountToGoal(parseFloat(payment.amount.value));
+      addAmountToGoal(parseFloat(meta.amount));
 
       sendCreapureInvoice(meta.email, {
         customerName: `${meta.firstName} ${meta.lastName}`,
         customerAddress: `${address.streetAndNumber}, ${address.postalCode} ${address.city}, ${address.country}`,
         customerEmail: meta.email,
-        amount: payment.amount.value,
+        amount: meta.amount,
         kilograms: parseFloat(amounts[meta.amount] || 0)
       });
     }

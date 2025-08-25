@@ -2,7 +2,6 @@ import { Resend } from 'resend';
 import fs from 'fs/promises';
 import { PDFInvoice } from '@h1dd3nsn1p3r/pdf-invoice';
 import dotenv from 'dotenv';
-import { title } from 'process';
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -27,8 +26,8 @@ async function sendEmail(to, subject, html, attachments = []) {
 const random6DigitCode = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
 
-const TAX_RATE_PERCENT = 9;           // shown on invoice
-const TAX_RATE = TAX_RATE_PERCENT / 100; // for math
+const TAX_RATE_PERCENT = 9;
+const TAX_RATE = TAX_RATE_PERCENT / 100;
 
 const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 
@@ -41,21 +40,24 @@ const parseQty = (val) => {
 
 const netFromGross = (gross) => round2(Number(gross) / (1 + TAX_RATE));
 
-// ===== Main =====
+export const amounts = {
+    "1": { base: 24.00, delivery: 4.00 },
+    "2": { base: 23.00, delivery: 4.00 },
+    "3": { base: 22.00, delivery: 4.00 },
+    "4": { base: 22.00, delivery: 0.00 },
+    "5": { base: 22.00, delivery: 0.00 },
+};
+
 export async function sendCreapureInvoice(to, invoiceData) {
     const invoiceNumber = random6DigitCode();
+    const amount = Math.min(5, Math.max(1, Number(invoiceData.amount)));
+    const { base, delivery } = amounts[amount.toString()];
 
-    // ---- Inputs ----
-    const grossTotal = round2(Number(invoiceData.amount)); // e.g. 28
-    const shippingGrossInput =
-        typeof invoiceData.shipping === 'number' && invoiceData.shipping >= 0
-            ? round2(invoiceData.shipping)
-            : 4; // default shipping gross
-    let productGross = round2(grossTotal - shippingGrossInput);
-    if (productGross < 0) productGross = 0;
-    const shippingGross = shippingGrossInput;
+    const grossTotal = base + delivery;
+    const shippingGross = delivery;
 
-    const quantity = parseQty(invoiceData.kilograms); // supports "0,5", defaults to 1
+    let productGross = base;
+    const quantity = parseQty(invoiceData.kilograms);
 
     // ---- Convert gross → net (per unit) so the lib can add 9% VAT from percent ----
     // product: divide total product gross by (1+VAT) to get net total, then per-unit
@@ -113,15 +115,15 @@ export async function sendCreapureInvoice(to, invoiceData) {
         items: [
             {
                 name: 'Creapure',
-                quantity,                 // ✅ never 0 due to parseQty fallback
-                price: productUnitNet,    // ✅ net price per unit
-                tax: TAX_RATE_PERCENT,    // ✅ percent, not absolute euros
+                quantity,
+                price: productUnitNet,
+                tax: TAX_RATE_PERCENT,
             },
             {
                 name: 'Verzendkosten',
                 quantity: 1,
-                price: shippingUnitNet,   // ✅ net price
-                tax: TAX_RATE_PERCENT,    // ✅ percent
+                price: shippingUnitNet,
+                tax: TAX_RATE_PERCENT,
             },
         ],
         qr: {
@@ -212,13 +214,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
             attachments
         );
     } catch (error) {
-        console.error('Error sending email with attachment:', error);
+        console.error('Error sending invoice email:', error);
         throw error;
-    } finally {
+    }
+    finally {
         try {
-            await fs.unlink(pdfFilePath); // ✅ remove the actual created file
-        } catch {
-            /* ignore */
+            await fs.unlink(pdfFilePath);
+        } catch (err) {
+            console.error('Error deleting PDF file:', err);
         }
     }
 }
