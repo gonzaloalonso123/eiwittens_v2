@@ -60,7 +60,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             name: 'Creapure',
             quantity,
             price: productGrossTotal / quantity,
-            tax: 0
+            tax: 9
         }
     ];
 
@@ -69,7 +69,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             name: 'Verzendkosten',
             quantity: 1,
             price: shippingGrossTotal,
-            tax: 0
+            tax: 9
         });
     }
 
