@@ -51,8 +51,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
     const shippingGross = delivery;
 
     let productGross = base;
-    const quantity = parseQty(invoiceData.kilograms);
-
+    const quantity = parseQty(invoiceData.amount);
     const productNetTotal = netFromGross(productGross);
     let productUnitNet = round2(productNetTotal / quantity);
     let shippingUnitNet = netFromGross(shippingGross);
@@ -91,7 +90,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
         invoice: {
             number: invoiceNumber,
             date: new Date().toLocaleDateString('nl-NL'),
-            dueDate: '-',
+            dueDate: '',
             status: 'Betaald!',
             locale: 'nl-NL',
             currency: 'EUR',
