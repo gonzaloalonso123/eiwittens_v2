@@ -2,7 +2,6 @@ const { FieldValue } = require("firebase-admin/firestore");
 const fs = require("fs/promises");
 const path = require("path");
 const { db } = require("./firebase");
-const { amounts } = require("..");
 
 const Products = db.collection("products");
 
