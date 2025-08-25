@@ -97,6 +97,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             // bank: 'NL18BUNQ2142472885',
         },
         customer: {
+            title: 'Klant',
             name: invoiceData.customerName,
             address: invoiceData.customerAddress,
             email: invoiceData.customerEmail,
@@ -107,7 +108,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             date: new Date().toLocaleDateString('nl-NL'),
             dueDate: new Date().toLocaleDateString('nl-NL'),
             status: 'Paid!',
-            locale: 'nl-NL',
+            locale: 'nl',
             currency: 'EUR',
             path: pdfPath,
         },
@@ -135,7 +136,25 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
     };
 
-    const invoice = new PDFInvoice(payload);
+
+    const config = {
+        string: {
+            invoice: "F A C T U U R",
+            refNumber: "Referentienummer",
+            date: "Datum",
+            dueDate: "Verzenddatum",
+            status: "Status",
+            billTo: "Factureren aan",
+            item: "Artikel",
+            quantity: "Aantal",
+            price: "Prijs",
+            tax: "Belasting",
+            total: "Totaal",
+            subTotal: "Subtotaal",
+            totalTax: "Totaal Belasting",
+        },
+    };
+    const invoice = new PDFInvoice(payload, config);
     const pdfFilePath = await invoice.create();
 
     try {
