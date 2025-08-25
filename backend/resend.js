@@ -67,9 +67,22 @@ export async function sendCreapureInvoice(to, invoiceData) {
         const remain = round2(grossTotal - (afterProductGross + recalcShippingGross));
         if (remain !== 0) {
             const shipNetAdj = round2(remain / (1 + TAX_RATE));
-            shippingUnitNet = round2(shippingUnitNet + shipNetAdj);
+            const newShippingUnitNet = round2(shippingUnitNet + shipNetAdj);
+
+            // Ensure shipping cost never goes below 0
+            if (newShippingUnitNet < 0) {
+                // If shipping would go negative, add the difference back to the product
+                const negativeAmount = -newShippingUnitNet;
+                const negativeGrossAmount = round2(negativeAmount * (1 + TAX_RATE));
+                const negativeNetPerUnit = round2(negativeGrossAmount / quantity);
+                productUnitNet = round2(productUnitNet + negativeNetPerUnit);
+                shippingUnitNet = 0;
+            } else {
+                shippingUnitNet = newShippingUnitNet;
+            }
         }
     }
+
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
 
