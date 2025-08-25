@@ -121,6 +121,8 @@ export async function sendCreapureInvoice(to, invoiceData) {
         },
     };
 
+    console.log('Generating invoice PDF with payload:', payload);
+
 
     const config = {
         string: {
