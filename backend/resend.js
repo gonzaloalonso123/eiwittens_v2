@@ -91,10 +91,10 @@ export async function sendCreapureInvoice(to, invoiceData) {
         company: {
             logo: await fs.readFile('./images/logo.svg', 'utf8'),
             name: 'GierigGroeien.nl',
-            email: 'Mail: info@creapure.gieriggroeien.nl',
+            email: 'Mail: info@gieriggroeien.nl',
             website: 'Web: https://www.gieriggroeien.nl',
-            taxId: 'NL867169576B01',
-            // bank: 'NL18BUNQ2142472885',
+            taxId: 'BTW: NL867169576B01',
+            bank: 'KVK: 95532595',
         },
         customer: {
             name: invoiceData.customerName,
