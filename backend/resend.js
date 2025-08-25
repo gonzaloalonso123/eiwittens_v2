@@ -123,6 +123,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             total: "Totaal",
             subTotal: "Subtotaal",
             totalTax: "Totaal BTW",
+            tax: "BTW",
         },
     };
     const invoice = new PDFInvoice(payload, config);
