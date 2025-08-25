@@ -243,7 +243,8 @@ app.post('/payment-webhook-creapure', async (req, res) => {
       };
 
       await createCreapurePayment({
-        amount: payment.amount.value,
+        amount_money: payment.amount.value,
+        amount_kilograms: meta.amount,
         address,
         paymentId: payment.id,
         firstName: meta.firstName,
@@ -274,7 +275,7 @@ app.post('/payment-webhook-creapure', async (req, res) => {
         customerName: `${meta.firstName} ${meta.lastName}`,
         customerAddress: `${address.streetAndNumber}, ${address.postalCode} ${address.city}, ${address.country}`,
         customerEmail: meta.email,
-        amount: amounts[meta.amount],
+        amount: meta.amount,
       });
     }
 
