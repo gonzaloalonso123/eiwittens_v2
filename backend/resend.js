@@ -44,8 +44,8 @@ export async function sendCreapureInvoice(to, invoiceData) {
     const pricing = pricingTiers[amount];
     const quantity = parseQty(invoiceData.amount);
 
-    const productGrossTotal = pricing.productGross * .81;
-    const shippingGrossTotal = pricing.shippingGross * .81;
+    const productGrossTotal = pricing.productGross * .91;
+    const shippingGrossTotal = pricing.shippingGross * .91;
     const totalGross = productGrossTotal + shippingGrossTotal;
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
