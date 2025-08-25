@@ -69,7 +69,6 @@ export async function sendCreapureInvoice(to, invoiceData) {
             const shipNetAdj = round2(remain / (1 + TAX_RATE));
             shippingUnitNet = round2(shippingUnitNet + shipNetAdj);
         } else if (remain !== 0) {
-            // If no shipping, add remaining difference to product
             const remainNetPerUnit = round2(remain / (1 + TAX_RATE) / quantity);
             productUnitNet = round2(productUnitNet + remainNetPerUnit);
         }
