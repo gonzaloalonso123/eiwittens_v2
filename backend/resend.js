@@ -59,7 +59,8 @@ export async function sendCreapureInvoice(to, invoiceData) {
         {
             name: 'Creapure',
             quantity,
-            price: productGrossTotal / quantity, // Just show the gross price directly
+            price: productGrossTotal / quantity,
+            tax: 0
         }
     ];
 
@@ -68,6 +69,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             name: 'Verzendkosten',
             quantity: 1,
             price: shippingGrossTotal,
+            tax: 0
         });
     }
 
@@ -120,7 +122,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
             price: "Prijs",
             total: "Totaal",
             subTotal: "Subtotaal",
-            totalTax: "Totaal BTW", // This can be removed if not needed
+            totalTax: "Totaal BTW",
         },
     };
     const invoice = new PDFInvoice(payload, config);
