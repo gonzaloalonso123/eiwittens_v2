@@ -131,7 +131,7 @@ require('dotenv').config();
 
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
-export const amounts = {
+const amounts = {
   "1": "28.00",
   "2": "50.00",
   "3": "70.00",

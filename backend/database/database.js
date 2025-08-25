@@ -161,6 +161,15 @@ const createCreapureUser = async (userId, userData) => {
   return userId;
 };
 
+const amounts = {
+  "1": "28.00",
+  "2": "50.00",
+  "3": "70.00",
+  "4": "88.00",
+  "5": "110.00"
+}
+
+
 const addAmountToGoal = async (amount) => {
   const docRef = db.collection("creapure-amount").doc("1");
   const amountNumber = parseFloat(amount);
