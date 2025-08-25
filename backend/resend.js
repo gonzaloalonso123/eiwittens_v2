@@ -104,6 +104,7 @@ export async function sendCreapureInvoice(to, invoiceData) {
         invoice: {
             number: invoiceNumber,
             date: new Date().toLocaleDateString('nl-NL'),
+            dueDate: '-',
             status: 'Betaald!',
             locale: 'nl-NL',
             currency: 'EUR',
