@@ -52,38 +52,41 @@ export async function sendCreapureInvoice(to, invoiceData) {
     const pricing = pricingTiers[amount];
     const quantity = parseQty(invoiceData.amount);
 
-    // Calculate net prices for display (the PDF library will add tax back)
-    const productNetTotal = grossToNet(pricing.productGross);
+    // Use gross prices directly from pricingTiers
+    const productGrossTotal = pricing.productGross;
+    const shippingGrossTotal = pricing.shippingGross;
+
+    // Calculate net prices for PDF display (before tax, as PDFInvoice will add tax)
+    const productNetTotal = grossToNet(productGrossTotal);
     const productUnitNet = round2(productNetTotal / quantity);
-    const shippingUnitNet = grossToNet(pricing.shippingGross);
+    const shippingUnitNet = grossToNet(shippingGrossTotal);
 
     console.log('Pricing calculation:');
     console.log('Amount tier:', amount);
     console.log('Expected total gross:', pricing.totalGross);
-    console.log('Product gross:', pricing.productGross);
-    console.log('Shipping gross:', pricing.shippingGross);
-    console.log('Product unit net:', productUnitNet);
-    console.log('Shipping unit net:', shippingUnitNet);
+    console.log('Product gross total:', productGrossTotal);
+    console.log('Shipping gross total:', shippingGrossTotal);
+    console.log('Product unit net (for PDF):', productUnitNet);
+    console.log('Shipping unit net (for PDF):', shippingUnitNet);
 
     const pdfPath = `./invoice-${invoiceNumber}.pdf`;
 
-    // Build items array
+    // Build items array for PDFInvoice
     const items = [
         {
             name: 'Creapure',
             quantity,
             price: productUnitNet, // Net price before tax
-            tax: TAX_RATE_PERCENT, // Apply tax here for final gross calculation
+            tax: TAX_RATE_PERCENT, // PDFInvoice will apply this to get gross
         }
     ];
 
-    // Only add shipping if there's a cost
-    if (pricing.shippingGross > 0) {
+    if (shippingGrossTotal > 0) {
         items.push({
             name: 'Verzendkosten',
             quantity: 1,
-            price: shippingUnitNet, // Net shipping price before tax
-            tax: TAX_RATE_PERCENT, // Apply tax here for final gross calculation
+            price: shippingUnitNet, // Net price before tax
+            tax: TAX_RATE_PERCENT,
         });
     }
 
@@ -123,17 +126,14 @@ export async function sendCreapureInvoice(to, invoiceData) {
 
     console.log('Generating invoice PDF with payload:', JSON.stringify(payload, null, 2));
 
-    // Verify the calculation will work
-    const calculatedProductGross = round2(netToGross(productUnitNet) * quantity);
-    const calculatedShippingGross = pricing.shippingGross > 0 ? round2(netToGross(shippingUnitNet)) : 0;
-    const calculatedTotal = round2(calculatedProductGross + calculatedShippingGross);
+    // Verify the totals using gross prices directly
+    const calculatedTotal = round2(productGrossTotal + shippingGrossTotal);
 
     console.log('Verification:');
     console.log('Expected total:', pricing.totalGross);
     console.log('Calculated total:', calculatedTotal);
     console.log('Difference:', round2(pricing.totalGross - calculatedTotal));
     console.log('Match:', Math.abs(pricing.totalGross - calculatedTotal) < 0.01 ? '✅' : '❌');
-
 
     const config = {
         string: {
