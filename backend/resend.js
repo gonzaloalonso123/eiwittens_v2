@@ -41,8 +41,8 @@ export async function sendCreapureInvoice(customerData) {
     items: [
       {
         name: "Creapure",
-        quantity,
-        priceExVat: pricing.net / quantity,
+        amount,
+        priceExVat: pricing.net / amount,
         vatRate: 9,
         totalExVat: pricing.net,
         vatAmount: pricing.vat,
@@ -67,7 +67,7 @@ export async function sendCreapureInvoice(customerData) {
     html: `
       <h2>Bedankt voor je bestelling!</h2>
       <p>Beste ${name},</p>
-      <p>Hierbij ontvang je de factuur voor je Creapure bestelling van ${quantity}kg.</p>
+      <p>Hierbij ontvang je de factuur voor je Creapure bestelling van ${amount}kg.</p>
       <p>Je bestelling wordt binnenkort verzonden.</p>
       <p>Met vriendelijke groet,<br>Team GierigGroeien</p>
     `,
