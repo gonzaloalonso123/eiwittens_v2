@@ -141,7 +141,7 @@ export class CustomInvoiceGenerator {
 
       this.doc.text(item.name, xPos + 2, currentY)
       xPos += colWidths.artikel
-      this.doc.text(item.amount.toString(), xPos + 2, currentY)
+      this.doc.text((item.quantity || item.amount).toString(), xPos + 2, currentY)
       xPos += colWidths.aantal
       this.doc.text(`€${item.priceExVat.toFixed(2)}`, xPos + 2, currentY)
       xPos += colWidths.prijsEx

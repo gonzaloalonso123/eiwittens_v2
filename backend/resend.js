@@ -8,11 +8,51 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 console.log("Resend API Key:", process.env.RESEND_API_KEY)
 
 const PRICING_TIERS = {
-  1: { gross: 28.0, net: 25.69, vat: 2.31 },
-  2: { gross: 50.0, net: 45.87, vat: 4.13 },
-  3: { gross: 70.0, net: 64.22, vat: 5.78 },
-  4: { gross: 88.0, net: 80.73, vat: 7.27 },
-  5: { gross: 110.0, net: 100.92, vat: 9.08 },
+  1: { 
+    productGross: 24.0, 
+    deliveryGross: 4.0,
+    productNet: 22.02, 
+    deliveryNet: 3.67,
+    productVat: 1.98,
+    deliveryVat: 0.33,
+    totalGross: 28.0 
+  },
+  2: { 
+    productGross: 46.0, 
+    deliveryGross: 4.0,
+    productNet: 42.20, 
+    deliveryNet: 3.67,
+    productVat: 3.80,
+    deliveryVat: 0.33,
+    totalGross: 50.0 
+  },
+  3: { 
+    productGross: 66.0, 
+    deliveryGross: 4.0,
+    productNet: 60.55, 
+    deliveryNet: 3.67,
+    productVat: 5.45,
+    deliveryVat: 0.33,
+    totalGross: 70.0 
+  },
+  4: { 
+    productGross: 88.0, 
+    deliveryGross: 0.0,
+    productNet: 80.73, 
+    deliveryNet: 0.0,
+    productVat: 7.27,
+    deliveryVat: 0.0,
+    totalGross: 88.0 
+  },
+  5: { 
+    productGross: 110.0, 
+    deliveryGross: 0.0,
+    productNet: 100.92, 
+    deliveryNet: 0.0,
+    productVat: 9.08,
+    deliveryVat: 0.0,
+    totalGross: 110.0 
+  },
 }
 
 export async function sendCreapureInvoice(customerData) {
@@ -41,17 +81,23 @@ export async function sendCreapureInvoice(customerData) {
     items: [
       {
         name: "Creapure",
-        amount,
-        priceExVat: pricing.net / amount,
+        quantity: amount,
+        priceExVat: pricing.productNet / amount,
         vatRate: 9,
-        totalExVat: pricing.net,
-        vatAmount: pricing.vat,
-        totalIncVat: pricing.gross,
+        totalIncVat: pricing.productGross,
       },
+      // Only add delivery item if there's a delivery cost
+      ...(pricing.deliveryGross > 0 ? [{
+        name: "Verzendkosten",
+        quantity: 1,
+        priceExVat: pricing.deliveryNet,
+        vatRate: 9,
+        totalIncVat: pricing.deliveryGross,
+      }] : []),
     ],
-    subtotalExVat: pricing.net,
-    totalVat: pricing.vat,
-    totalIncVat: pricing.gross,
+    subtotalExVat: pricing.productNet + pricing.deliveryNet,
+    totalVat: pricing.productVat + pricing.deliveryVat,
+    totalIncVat: pricing.totalGross,
     note: "Bedankt voor je deelname.",
   }
 
