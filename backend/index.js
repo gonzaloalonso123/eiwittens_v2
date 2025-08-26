@@ -270,11 +270,10 @@ app.post('/payment-webhook-creapure', async (req, res) => {
       });
 
       addAmountToGoal(meta.amount);
-
-      sendCreapureInvoice(meta.email, {
-        customerName: `${meta.firstName} ${meta.lastName}`,
-        customerAddress: `${address.streetAndNumber}, ${address.postalCode} ${address.city}, ${address.country}`,
-        customerEmail: meta.email,
+      sendCreapureInvoice({
+        email: meta.email,
+        address: `${address.streetAndNumber}, ${address.postalCode} ${address.city}, ${address.country}`,
+        name: `${meta.firstName} ${meta.lastName}`,
         amount: meta.amount,
       });
     }
