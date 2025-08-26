@@ -1,5 +1,5 @@
 import { Resend } from "resend"
-import { CustomInvoiceGenerator } from "./custom-invoice-generator"
+import { CustomInvoiceGenerator } from "./custom-invoice-generator.js"
 import { generateInvoiceNumber } from "./utils"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
