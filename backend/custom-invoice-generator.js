@@ -25,7 +25,7 @@ export class CustomInvoiceGenerator {
 
   addLogo() {
     try {
-      const logoPath = path.join(process.cwd(), "public", "placeholder-logo.png")
+      const logoPath = path.join(process.cwd(), "images", "logo.png")
       const logoBuffer = fs.readFileSync(logoPath)
       const logoBase64 = logoBuffer.toString("base64")
 
