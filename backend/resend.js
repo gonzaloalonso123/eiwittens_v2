@@ -14,12 +14,12 @@ const PRICING_TIERS = {
 }
 
 export async function sendCreapureInvoice(customerData) {
-  const { name, email, address, quantity } = customerData
+  const { name, email, address, amount } = customerData
 
   // Get pricing for the quantity
-  const pricing = PRICING_TIERS[quantity]
+  const pricing = PRICING_TIERS[amount]
   if (!pricing) {
-    throw new Error(`Invalid quantity: ${quantity}`)
+    throw new Error(`Invalid quantity: ${amount}`)
   }
 
   // Create invoice data
