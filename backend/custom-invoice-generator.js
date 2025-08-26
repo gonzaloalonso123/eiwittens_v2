@@ -30,7 +30,7 @@ export class CustomInvoiceGenerator {
       const logoBase64 = logoBuffer.toString("base64")
 
       // Add the logo image to the PDF
-      this.doc.addImage(`data:image/png;base64,${logoBase64}`, "PNG", this.margin, 15, 40, 20)
+      this.doc.addImage(`data:image/png;base64,${logoBase64}`, "PNG", this.margin, 15, 20, 20)
     } catch (error) {
       console.log("[v0] Logo loading failed, using placeholder:", error.message)
       this.doc.setDrawColor(200, 200, 200)
