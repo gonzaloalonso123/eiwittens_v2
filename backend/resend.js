@@ -1,9 +1,12 @@
-import 'dotenv/config'
+
 import { Resend } from "resend"
 import { CustomInvoiceGenerator } from "./custom-invoice-generator.js"
 import { generateInvoiceNumber } from "./utils.js"
 
+
+require('dotenv').config();
 const resend = new Resend(process.env.RESEND_API_KEY)
+console.log("Resend API Key:", process.env.RESEND_API_KEY)
 
 const PRICING_TIERS = {
   1: { gross: 28.0, net: 25.69, vat: 2.31 },
