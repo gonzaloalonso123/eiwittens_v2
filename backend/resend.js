@@ -81,5 +81,7 @@ export async function sendCreapureInvoice(customerData) {
     console.error("Error sending invoice email:", error)
   })
 
+  console.log("Email send result:", result)
+
   return result
 }
