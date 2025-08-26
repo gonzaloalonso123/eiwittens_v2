@@ -19,21 +19,21 @@ const PRICING_TIERS = {
   },
   2: { 
     productGross: 46.0, 
-    deliveryGross: 4.0,
+    deliveryGross: 3.0,
     productNet: 42.20, 
-    deliveryNet: 3.67,
+    deliveryNet: 2.75,
     productVat: 3.80,
-    deliveryVat: 0.33,
-    totalGross: 50.0 
+    deliveryVat: 0.25,
+    totalGross: 49.0 
   },
   3: { 
     productGross: 66.0, 
-    deliveryGross: 4.0,
+    deliveryGross: 2.0,
     productNet: 60.55, 
-    deliveryNet: 3.67,
+    deliveryNet: 1.83,
     productVat: 5.45,
-    deliveryVat: 0.33,
-    totalGross: 70.0 
+    deliveryVat: 0.17,
+    totalGross: 68.0 
   },
   4: { 
     productGross: 88.0, 
