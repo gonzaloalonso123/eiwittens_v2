@@ -2,9 +2,8 @@
 import { Resend } from "resend"
 import { CustomInvoiceGenerator } from "./custom-invoice-generator.js"
 import { generateInvoiceNumber } from "./utils.js"
+import 'dotenv/config';
 
-
-require('dotenv').config();
 const resend = new Resend(process.env.RESEND_API_KEY)
 console.log("Resend API Key:", process.env.RESEND_API_KEY)
 
@@ -19,13 +18,11 @@ const PRICING_TIERS = {
 export async function sendCreapureInvoice(customerData) {
   const { name, email, address, amount } = customerData
 
-  // Get pricing for the quantity
   const pricing = PRICING_TIERS[amount]
   if (!pricing) {
     throw new Error(`Invalid quantity: ${amount}`)
   }
 
-  // Create invoice data
   const invoiceData = {
     invoiceNumber: generateInvoiceNumber(),
     date: new Date().toLocaleDateString("nl-NL"),
