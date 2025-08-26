@@ -1,10 +1,10 @@
+import 'dotenv/config'
 import { Resend } from "resend"
 import { CustomInvoiceGenerator } from "./custom-invoice-generator.js"
 import { generateInvoiceNumber } from "./utils.js"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Pricing tiers from original code
 const PRICING_TIERS = {
   1: { gross: 28.0, net: 25.69, vat: 2.31 },
   2: { gross: 50.0, net: 45.87, vat: 4.13 },
@@ -55,7 +55,6 @@ export async function sendCreapureInvoice(customerData) {
     note: "Bedankt voor je deelname.",
   }
 
-  // Generate PDF
   const generator = new CustomInvoiceGenerator()
   const pdfBuffer = generator.generateInvoice(invoiceData)
 
