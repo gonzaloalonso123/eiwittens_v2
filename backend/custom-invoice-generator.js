@@ -1,4 +1,6 @@
 import { jsPDF } from "jspdf"
+import fs from "fs"
+import path from "path"
 
 export class CustomInvoiceGenerator {
   constructor() {
@@ -22,15 +24,24 @@ export class CustomInvoiceGenerator {
   }
 
   addLogo() {
-    // Add a placeholder rectangle for logo - you can replace this with actual logo embedding
-    this.doc.setDrawColor(200, 200, 200)
-    this.doc.setFillColor(240, 240, 240)
-    this.doc.rect(this.margin, 15, 40, 20, "FD")
+    try {
+      const logoPath = path.join(process.cwd(), "public", "placeholder-logo.png")
+      const logoBuffer = fs.readFileSync(logoPath)
+      const logoBase64 = logoBuffer.toString("base64")
 
-    this.doc.setFontSize(8)
-    this.doc.setTextColor(100, 100, 100)
-    this.doc.text("LOGO", this.margin + 20, 27, { align: "center" })
-    this.doc.setTextColor(0, 0, 0) // Reset to black
+      // Add the logo image to the PDF
+      this.doc.addImage(`data:image/png;base64,${logoBase64}`, "PNG", this.margin, 15, 40, 20)
+    } catch (error) {
+      console.log("[v0] Logo loading failed, using placeholder:", error.message)
+      this.doc.setDrawColor(200, 200, 200)
+      this.doc.setFillColor(240, 240, 240)
+      this.doc.rect(this.margin, 15, 40, 20, "FD")
+
+      this.doc.setFontSize(8)
+      this.doc.setTextColor(100, 100, 100)
+      this.doc.text("LOGO", this.margin + 20, 27, { align: "center" })
+      this.doc.setTextColor(0, 0, 0) // Reset to black
+    }
   }
 
   addHeader(data) {
