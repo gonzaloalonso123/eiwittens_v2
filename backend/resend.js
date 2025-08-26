@@ -61,7 +61,7 @@ export async function sendCreapureInvoice(customerData) {
 
   console.log("Generated PDF Buffer:", pdfBuffer, email, name, amount)
   const result = await resend.emails.send({
-    from: "GierigGroeien <info@gieriggroeien.nl>",
+    from: "GierigGroeien <info@creapure.gieriggroeien.nl>",
     to: email,
     subject: `Factuur ${invoiceData.invoiceNumber} - Creapure Bestelling`,
     html: `
