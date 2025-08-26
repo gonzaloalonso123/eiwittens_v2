@@ -133,8 +133,8 @@ const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
 const amounts = {
   1: "28.00",
-  2: "50.00",
-  3: "70.00",
+  2: "49.00",
+  3: "68.00",
   4: "88.00",
   5: "110.00"
 }
