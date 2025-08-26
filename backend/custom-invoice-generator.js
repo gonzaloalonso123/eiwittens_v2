@@ -77,15 +77,20 @@ export class CustomInvoiceGenerator {
     this.doc.setFont("helvetica", "normal")
     this.doc.text(customer.name, this.margin, 125)
 
-    // Handle multi-line address
-    const addressLines = customer.address.split(", ")
+    // Handle multi-line address - split on both commas and newlines
+    const addressLines = customer.address.split(/[,\n]/).map(line => line.trim()).filter(line => line.length > 0)
     let yPos = 135
-    addressLines.forEach((line) => {
-      this.doc.text(line, this.margin, yPos)
-      yPos += 10
+    addressLines.forEach((line, index) => {
+      // Limit to max 3 address lines to prevent overlap with table
+      if (index < 3) {
+        this.doc.text(line, this.margin, yPos)
+        yPos += 10
+      }
     })
 
-    this.doc.text(customer.email, this.margin, yPos + 5)
+    // Ensure email doesn't go below y position 165 to avoid table overlap
+    const emailY = Math.min(yPos + 5, 165)
+    this.doc.text(customer.email, this.margin, emailY)
   }
 
   addInvoiceDetails(data) {
