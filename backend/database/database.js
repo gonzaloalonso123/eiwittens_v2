@@ -129,9 +129,9 @@ const getReferralCounts = async () => {
   const querySnapshot = await db.collection("creapure-payments").get();
   querySnapshot.forEach((doc) => {
     const data = doc.data();
-    if (data.referralUserId) {
-      if (!referralCounts[data.referralUserId]) {
-        referralCounts[data.referralUserId] = 0;
+    if (data.referralCode) {
+      if (!referralCounts[data.referralCode]) {
+        referralCounts[data.referralCode] = 0;
       }
       referralCounts[data.referralUserId]++;
     }
