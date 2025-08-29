@@ -133,7 +133,7 @@ const getReferralCounts = async () => {
       if (!referralCounts[data.referralCode]) {
         referralCounts[data.referralCode] = 0;
       }
-      referralCounts[data.referralUserId]++;
+      referralCounts[data.referralCode]++;
     }
   });
   return referralCounts;
