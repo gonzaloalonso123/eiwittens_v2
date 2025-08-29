@@ -171,10 +171,9 @@ const amounts = {
 
 const addAmountToGoal = async (amount) => {
   const docRef = db.collection("creapure-amount").doc("1");
-  const amountNumber = parseFloat(amount);
   await docRef.update({
-    amount: FieldValue.increment(amountNumber),
-    amount_kilograms: FieldValue.increment(amounts[amount] || 0)
+    amount_money: FieldValue.increment(amounts[amount] || 0),
+    amount_kilograms: FieldValue.increment(amount || 0)
   });
 }
 
