@@ -131,7 +131,7 @@ export async function sendCreapureInvoice(customerData) {
     sendReferralProgramEmail(customerData).catch((error) => {
       console.error("Error sending referral email:", error)
     })
-  }, 10 * 60 * 1000)
+  }, 3 * 60 * 1000)
 
   return result
 }
