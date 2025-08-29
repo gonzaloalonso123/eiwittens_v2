@@ -188,6 +188,15 @@ const addNicknameToUser = async (userId, nickname) => {
   return nickname || '';
 };
 
+const getCreapureUser = async (userId) => {
+  const docRef = db.collection("creapure-users").doc(userId);
+  const doc = await docRef.get();
+  if (!doc.exists) {
+    return null;
+  }
+  return doc.data();
+}
+
 const checkIfNicknameExists = async (nickname) => {
   const querySnapshot = await db.collection("creapure-users").where("nickname", "==", nickname).get();
   return !querySnapshot.empty;
@@ -227,6 +236,7 @@ module.exports = {
   getProducts,
   createCreapureUser,
   updateProduct,
+  getCreapureUser,
   addAmountToGoal,
   getAmountGoal,
   addTimeInTopTenToProduct,

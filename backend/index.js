@@ -16,6 +16,7 @@ const {
   checkIfNicknameExists,
   addNicknameToUser,
   getReferralCounts,
+  getCreapureUser,
 } = require("./database/database");
 const { createBackupFile } = require("./backup");
 const multer = require("multer");
@@ -317,6 +318,23 @@ app.post('/add-nickname', async (req, res) => {
     res.status(500).send('Error adding nickname');
   }
 });
+
+app.get("/creapure-user/:id", async (req, res) => {
+  const userId = req.params.id;
+  if (!userId) {
+    return res.status(400).send('User ID is required');
+  }
+  try {
+    const user = await getCreapureUser(userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).send('Error fetching user');
+  }
+})
 
 app.get('/referral-counts', async (req, res) => {
   try {
