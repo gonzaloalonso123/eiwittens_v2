@@ -1,4 +1,3 @@
-
 import { Resend } from "resend"
 import { CustomInvoiceGenerator } from "./custom-invoice-generator.js"
 import { generateInvoiceNumber } from "./utils.js"
@@ -128,6 +127,82 @@ export async function sendCreapureInvoice(customerData) {
   })
 
   console.log("Email send result:", result)
+  setTimeout(() => {
+    sendReferralProgramEmail(customerData).catch((error) => {
+      console.error("Error sending referral email:", error)
+    })
+  }, 10 * 60 * 1000)
 
   return result
 }
+
+export async function sendReferralProgramEmail(customerData) {
+  const { name, email, id } = customerData
+
+  const result = await resend.emails.send({
+    from: "GierigGroeien <info@creapure.gieriggroeien.nl>",
+    to: email,
+    subject: "💥 Claim je persoonlijke Creapure-link & win dikke prijzen!",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">
+        <h2 style="color: #2c3e50;">Hey ${name},</h2>
+        
+        <p>Jouw bestelling is binnen – lekker bezig! 💪</p>
+        
+        <p>Maar… het wordt nog beter. Jij kunt nu prijzen winnen door je vrienden mee te laten doen aan deze actie!</p>
+        
+        <p>Claim je persoonlijke referral link via de knop hieronder.</p>
+        
+        <p>Iedere keer dat iemand via jouw link Creapure bestelt, verdien je een extra loterijticket. 🎟️</p>
+        
+        <h3 style="color: #e74c3c;">Wat kun je winnen?</h3>
+        
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <h4 style="color: #2c3e50; margin-top: 0;">🏆 Loterijprijzen – iedereen maakt kans:</h4>
+          <ul style="margin-bottom: 0;">
+            <li>6x potjes pre-workout</li>
+            <li>1x 4kg whey protein</li>
+            <li>3 maanden gratis coaching</li>
+          </ul>
+        </div>
+        
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+          <p style="margin: 0;"><strong>🔥 Leaderboard prijzen</strong> – voor de top 3 mensen met de meeste referrals ligt een extra dikke prijs klaar!</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://gieriggroeien.nl/claim-jouw-unieke-creapure-referral-link?userId=${id}" style="display: inline-block; background-color: #e74c3c; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; margin: 5px;">
+            ➡️ Claim hier jouw link
+          </a>
+          <br>
+          <a href="https://gieriggroeien.nl/creapure-crowdfundactie-leaderboard/" style="display: inline-block; background-color: #3498db; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; margin: 5px;">
+            ➡️ Bekijk het leaderboard
+          </a>
+        </div>
+        
+        <p style="background-color: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
+          <strong>De actie loopt tot 14 september</strong> – hoe meer vrienden je uitnodigt, hoe meer tickets je verzamelt.
+        </p>
+        
+        <p style="text-align: center; font-size: 18px; color: #e74c3c;">
+          <strong>Samen maken we Creapure goedkoop in NL. Let's go! 🚀</strong>
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+        
+        <p style="text-align: center; color: #666;">
+          Team GierigGroeien<br>
+          <a href="https://www.gieriggroeien.nl" style="color: #3498db;">www.gieriggroeien.nl</a>
+        </p>
+      </div>
+    `,
+  }).catch((error) => {
+    console.error("Error sending referral program email:", error)
+  })
+
+  console.log("Referral email send result:", result)
+
+  return result
+}
+
+
