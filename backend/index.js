@@ -288,7 +288,7 @@ app.post('/payment-webhook-creapure', async (req, res) => {
 });
 
 
-const GOAL = 200;
+const GOAL = 500;
 app.get('/creapure-progress', async (req, res) => {
   try {
     const { totalKilograms } = await getAmountGoal();
