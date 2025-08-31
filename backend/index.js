@@ -26,6 +26,7 @@ const { createMollieClient } = require('@mollie/api-client');
 const { generateNickname } = require("./utils");
 const { randomUUID } = require("crypto");
 const { sendCreapureInvoice } = require("./resend");
+import Stripe from "stripe";
 
 
 app.use(
@@ -130,18 +131,21 @@ app.post("/product-clicked/:id", async (req, res) => {
 
 require('dotenv').config();
 
-const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
+
+///STRIPE IMPLEMENTATION///
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const amounts = {
-  1: "28.00",
-  2: "49.00",
-  3: "68.00",
-  4: "88.00",
-  5: "110.00"
-}
+  1: 2800,  // Stripe wants cents
+  2: 4900,
+  3: 6800,
+  4: 8800,
+  5: 11000,
+};
 
-app.post('/create-payment-creapure', async (req, res) => {
-  console.log('Payment request hit the server:', req.body);
+app.post("/create-payment-creapure", async (req, res) => {
+  console.log("Payment request hit the server:", req.body);
 
   const {
     amount,
@@ -157,23 +161,37 @@ app.post('/create-payment-creapure', async (req, res) => {
     city,
     postal,
     offers,
-    email
+    email,
   } = req.body;
 
   if (!amounts[amount]) {
-    return res.status(400).send('Invalid amount selected');
+    return res.status(400).send("Invalid amount selected");
   }
 
   try {
     const userId = randomUUID();
-    const amountAsNumber = parseFloat(amount);
-    const fullStreetAndNumber = `${street} ${houseNumber}${addition ? ' ' + addition : ''}`;
+    const fullStreetAndNumber = `${street} ${houseNumber}${
+      addition ? " " + addition : ""
+    }`;
 
-    const payment = await mollieClient.payments.create({
-      amount: {
-        currency: 'EUR',
-        value: amounts[amountAsNumber] || '0.00',
-      },
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card", "ideal"], // Add iDEAL for NL
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: "eur",
+            product_data: {
+              name: description || "Creapure Payment",
+            },
+            unit_amount: amounts[amount], // already in cents
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: email,
+      success_url: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: "https://gieriggroeien.nl/creapure-annuleren",
       metadata: {
         referralCode: ref || null,
         firstName,
@@ -182,110 +200,268 @@ app.post('/create-payment-creapure', async (req, res) => {
         country,
         street,
         houseNumber,
-        addition,
+        addition: addition || null,
         city,
         postal,
         email,
         userId,
-        amount: amountAsNumber,
-        offers: !!offers
+        amount,
+        offers: !!offers,
       },
-      description: description || 'Creapure Payment',
-      redirectUrl: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}`,
-      webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
-      billingAddress: {
-        givenName: firstName,
-        familyName: lastName,
-        streetAndNumber: fullStreetAndNumber,
-        city,
-        postalCode: postal,
-        country: "NL"
+      shipping_address_collection: {
+        allowed_countries: ["NL", "BE", "DE"], // adjust as needed
       },
-      shippingAddress: {
-        givenName: firstName,
-        familyName: lastName,
-        streetAndNumber: fullStreetAndNumber,
-        city,
-        postalCode: postal,
-        country: "NL"
-      }
     });
 
-    res.json({ paymentUrl: payment.getCheckoutUrl() });
+    res.json({ paymentUrl: session.url });
   } catch (error) {
-    console.error('Error creating payment:', error);
-    res.status(500).send('Error initiating payment');
+    console.error("Error creating Stripe session:", error);
+    res.status(500).send("Error initiating payment");
   }
 });
 
+// Stripe requires raw body for webhook verification
+import bodyParser from "body-parser";
 
+app.post(
+  "/payment-webhook-creapure",
+  bodyParser.raw({ type: "application/json" }),
+  async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+    let event;
 
-app.post('/payment-webhook-creapure', async (req, res) => {
-  const paymentId = req.body.id;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err.message);
+      return res.sendStatus(400);
+    }
 
-  if (!paymentId) {
-    res.sendStatus(400);
-    return;
-  }
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const meta = session.metadata || {};
 
-  try {
-    const payment = await mollieClient.payments.get(paymentId);
-    console.log(`Payment ${paymentId} status:`, payment.status);
+      try {
+        const address = session.shipping_details?.address || {
+          line1: `${meta.street} ${meta.houseNumber}${
+            meta.addition ? " " + meta.addition : ""
+          }`,
+          city: meta.city,
+          postal_code: meta.postal,
+          country: meta.country,
+        };
 
-    if (payment.status === 'paid') {
-      const meta = payment.metadata || {};
-      const address = payment.details?.shippingAddress || payment.shippingAddress || {
-        givenName: meta.firstName,
-        familyName: meta.lastName,
-        streetAndNumber: `${meta.street} ${meta.houseNumber}${meta.addition ? ' ' + meta.addition : ''}`,
-        city: meta.city,
-        postalCode: meta.postal,
-        country: meta.country
-      };
+        await createCreapurePayment({
+          amount_money: session.amount_total / 100,
+          amount_kilograms: meta.amount,
+          address: {
+            streetAndNumber: address.line1,
+            city: address.city,
+            postalCode: address.postal_code,
+            country: address.country,
+          },
+          paymentId: session.id,
+          firstName: meta.firstName,
+          lastName: meta.lastName,
+          phone: meta.phone,
+          country: meta.country,
+          street: meta.street,
+          houseNumber: meta.houseNumber,
+          addition: meta.addition,
+          city: meta.city,
+          postal: meta.postal,
+          email: meta.email,
+          offers: meta.offers,
+          referralCode: meta.referralCode,
+          userId: meta.userId,
+        });
 
-      await createCreapurePayment({
-        amount_money: payment.amount.value,
-        amount_kilograms: meta.amount,
-        address,
-        paymentId: payment.id,
-        firstName: meta.firstName,
-        lastName: meta.lastName,
-        phone: meta.phone,
-        country: meta.country,
-        street: meta.street,
-        houseNumber: meta.houseNumber,
-        addition: meta.addition || null,
-        city: meta.city,
-        postal: meta.postal,
-        email: meta.email,
-        offers: meta.offers,
-        referralCode: meta.referralCode || null,
-        userId: meta.userId
-      });
+        await createCreapureUser(meta.userId, {
+          firstName: meta.firstName,
+          lastName: meta.lastName,
+          phone: meta.phone,
+          email: meta.email,
+        });
 
-      await createCreapureUser(meta.userId, {
-        firstName: meta.firstName,
-        lastName: meta.lastName,
-        phone: meta.phone,
-        email: meta.email,
-      });
-
-      addAmountToGoal(meta.amount);
-      sendCreapureInvoice({
-        email: meta.email,
-        address: `${address.streetAndNumber}, ${address.postalCode} ${address.city}, ${address.country}`,
-        name: `${meta.firstName} ${meta.lastName}`,
-        amount: meta.amount,
-        id: meta.userId,
-      });
+        addAmountToGoal(meta.amount);
+        sendCreapureInvoice({
+          email: meta.email,
+          address: `${address.line1}, ${address.postal_code} ${address.city}, ${address.country}`,
+          name: `${meta.firstName} ${meta.lastName}`,
+          amount: meta.amount,
+          id: meta.userId,
+        });
+      } catch (err) {
+        console.error("Error handling Stripe webhook:", err);
+      }
     }
 
     res.sendStatus(200);
-  } catch (err) {
-    console.error('Error handling Mollie webhook:', err);
-    res.sendStatus(500);
   }
-});
+);
+
+///STRIPE IMPLEMENTATION
+
+// const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
+
+// const amounts = {
+//   1: "28.00",
+//   2: "49.00",
+//   3: "68.00",
+//   4: "88.00",
+//   5: "110.00"
+// }
+
+// app.post('/create-payment-creapure', async (req, res) => {
+//   console.log('Payment request hit the server:', req.body);
+
+//   const {
+//     amount,
+//     description,
+//     ref,
+//     firstName,
+//     lastName,
+//     phone,
+//     country,
+//     street,
+//     houseNumber,
+//     addition,
+//     city,
+//     postal,
+//     offers,
+//     email
+//   } = req.body;
+
+//   if (!amounts[amount]) {
+//     return res.status(400).send('Invalid amount selected');
+//   }
+
+//   try {
+//     const userId = randomUUID();
+//     const amountAsNumber = parseFloat(amount);
+//     const fullStreetAndNumber = `${street} ${houseNumber}${addition ? ' ' + addition : ''}`;
+
+//     const payment = await mollieClient.payments.create({
+//       amount: {
+//         currency: 'EUR',
+//         value: amounts[amountAsNumber] || '0.00',
+//       },
+//       metadata: {
+//         referralCode: ref || null,
+//         firstName,
+//         lastName,
+//         phone,
+//         country,
+//         street,
+//         houseNumber,
+//         addition,
+//         city,
+//         postal,
+//         email,
+//         userId,
+//         amount: amountAsNumber,
+//         offers: !!offers
+//       },
+//       description: description || 'Creapure Payment',
+//       redirectUrl: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}`,
+//       webhookUrl: 'https://gierig-groeien.api-gollum.online/payment-webhook-creapure',
+//       billingAddress: {
+//         givenName: firstName,
+//         familyName: lastName,
+//         streetAndNumber: fullStreetAndNumber,
+//         city,
+//         postalCode: postal,
+//         country: "NL"
+//       },
+//       shippingAddress: {
+//         givenName: firstName,
+//         familyName: lastName,
+//         streetAndNumber: fullStreetAndNumber,
+//         city,
+//         postalCode: postal,
+//         country: "NL"
+//       }
+//     });
+
+//     res.json({ paymentUrl: payment.getCheckoutUrl() });
+//   } catch (error) {
+//     console.error('Error creating payment:', error);
+//     res.status(500).send('Error initiating payment');
+//   }
+// });
+
+
+
+// app.post('/payment-webhook-creapure', async (req, res) => {
+//   const paymentId = req.body.id;
+
+//   if (!paymentId) {
+//     res.sendStatus(400);
+//     return;
+//   }
+
+//   try {
+//     const payment = await mollieClient.payments.get(paymentId);
+//     console.log(`Payment ${paymentId} status:`, payment.status);
+
+//     if (payment.status === 'paid') {
+//       const meta = payment.metadata || {};
+//       const address = payment.details?.shippingAddress || payment.shippingAddress || {
+//         givenName: meta.firstName,
+//         familyName: meta.lastName,
+//         streetAndNumber: `${meta.street} ${meta.houseNumber}${meta.addition ? ' ' + meta.addition : ''}`,
+//         city: meta.city,
+//         postalCode: meta.postal,
+//         country: meta.country
+//       };
+
+//       await createCreapurePayment({
+//         amount_money: payment.amount.value,
+//         amount_kilograms: meta.amount,
+//         address,
+//         paymentId: payment.id,
+//         firstName: meta.firstName,
+//         lastName: meta.lastName,
+//         phone: meta.phone,
+//         country: meta.country,
+//         street: meta.street,
+//         houseNumber: meta.houseNumber,
+//         addition: meta.addition || null,
+//         city: meta.city,
+//         postal: meta.postal,
+//         email: meta.email,
+//         offers: meta.offers,
+//         referralCode: meta.referralCode || null,
+//         userId: meta.userId
+//       });
+
+//       await createCreapureUser(meta.userId, {
+//         firstName: meta.firstName,
+//         lastName: meta.lastName,
+//         phone: meta.phone,
+//         email: meta.email,
+//       });
+
+//       addAmountToGoal(meta.amount);
+//       sendCreapureInvoice({
+//         email: meta.email,
+//         address: `${address.streetAndNumber}, ${address.postalCode} ${address.city}, ${address.country}`,
+//         name: `${meta.firstName} ${meta.lastName}`,
+//         amount: meta.amount,
+//         id: meta.userId,
+//       });
+//     }
+
+//     res.sendStatus(200);
+//   } catch (err) {
+//     console.error('Error handling Mollie webhook:', err);
+//     res.sendStatus(500);
+//   }
+// });
 
 
 const GOAL = 500;
