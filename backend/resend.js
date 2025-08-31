@@ -144,8 +144,8 @@ export async function sendReferralProgramEmail(customerData) {
     to: email,
     subject: "Claim je persoonlijke Creapure-link & win dikke prijzen!",
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">
-        <h2 style="color: #2c3e50;">Hey ${name},</h2>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">        
+        <h2 style="color: #00BDC6;">Hey ${name},</h2>
         
         <p>Jouw bestelling is binnen – lekker bezig!</p>
         
@@ -155,10 +155,10 @@ export async function sendReferralProgramEmail(customerData) {
         
         <p>Iedere keer dat iemand via jouw link Creapure bestelt, verdien je een extra loterijticket.</p>
         
-        <h3 style="color: #e74c3c;">Wat kun je winnen?</h3>
+        <h3 style="color: #ff630d;">Wat kun je winnen?</h3>
         
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <h4 style="color: #2c3e50; margin-top: 0;">Loterijprijzen – iedereen maakt kans:</h4>
+        <div style="background-color: #f0feff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00BDC6;">
+          <h4 style="color: #00BDC6; margin-top: 0;">Loterijprijzen – iedereen maakt kans:</h4>
           <ul style="margin-bottom: 0;">
             <li>6x potjes pre-workout</li>
             <li>1x 4kg whey protein</li>
@@ -166,30 +166,30 @@ export async function sendReferralProgramEmail(customerData) {
           </ul>
         </div>
         
-        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+        <div style="background-color: #fff5f0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ff630d;">
           <p style="margin: 0;"><strong>Leaderboard prijzen</strong> – voor de top 3 mensen met de meeste referrals ligt een extra dikke prijs klaar!</p>
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://gieriggroeien.nl/claim-jouw-unieke-creapure-referral-link?userId=${id}" style="display: inline-block; background-color: #e74c3c; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; margin: 5px;">
+          <a href="https://gieriggroeien.nl/claim-jouw-unieke-creapure-referral-link?userId=${id}" style="display: inline-block; background: linear-gradient(135deg, #00BDC6, #ff630d); color: white; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; margin: 5px; box-shadow: 0 4px 15px rgba(0, 189, 198, 0.3);">
             Claim hier jouw link
           </a>
           <br>
         </div>
         
-        <p style="background-color: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
-          <strong>De actie loopt tot 14 september</strong> – hoe meer vrienden je uitnodigt, hoe meer tickets je verzamelt.
+        <p style="background: linear-gradient(135deg, #f0feff, #fff5f0); padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #00BDC6;">
+          <strong style="color: #00BDC6;">De actie loopt tot 14 september</strong> – hoe meer vrienden je uitnodigt, hoe meer tickets je verzamelt.
         </p>
         
-        <p style="text-align: center; font-size: 18px; color: #e74c3c;">
+        <p style="text-align: center; font-size: 18px; color: #ff630d;">
           <strong>Samen maken we Creapure goedkoop in NL. Let's go!</strong>
         </p>
         
-        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+        <hr style="border: none; border-top: 2px solid #00BDC6; margin: 30px 0;">
         
         <p style="text-align: center; color: #666;">
           Team GierigGroeien<br>
-          <a href="https://www.gieriggroeien.nl" style="color: #3498db;">www.gieriggroeien.nl</a>
+          <a href="https://www.gieriggroeien.nl" style="color: #00BDC6;">www.gieriggroeien.nl</a>
         </p>
       </div>
     `,
