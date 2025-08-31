@@ -183,38 +183,9 @@ app.post("/create-payment-creapure", async (req, res) => {
     const fullStreetAndNumber = `${street} ${houseNumber}${addition ? " " + addition : ""
       }`;
     const amountAsNumber = parseFloat(amount);
-
-    let customer;
-    try {
-      const existingCustomers = await stripe.customers.list({
-        email: email,
-        limit: 1,
-      });
-
-      if (existingCustomers.data.length > 0) {
-        customer = existingCustomers.data[0];
-      } else {
-        customer = await stripe.customers.create({
-          name: `${firstName} ${lastName}`,
-          email: email,
-          phone: phone,
-          address: {
-            line1: fullStreetAndNumber,
-            city: city,
-            postal_code: postal,
-            country: country,
-          },
-        });
-      }
-    } catch (customerError) {
-      console.error("Error handling customer:", customerError);
-      return res.status(500).send("Error processing customer information");
-    }
-
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["ideal"], // Add iDEAL for NL
+      payment_method_types: ["ideal"],
       mode: "payment",
-      customer: customer.id,
       line_items: [
         {
           price_data: {
@@ -227,6 +198,7 @@ app.post("/create-payment-creapure", async (req, res) => {
           quantity: 1,
         },
       ],
+      customer_email: email,
       success_url: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: "https://gieriggroeien.nl/creapure-annuleren",
       metadata: {
