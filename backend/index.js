@@ -198,7 +198,17 @@ app.post("/create-payment-creapure", async (req, res) => {
           quantity: 1,
         },
       ],
-      customer_email: email,
+      customer_details: {
+        name: `${firstName} ${lastName}`,
+        email: email,
+        address: {
+          line1: fullStreetAndNumber,
+          city: city,
+          postal_code: postal,
+          country: country,
+        },
+        phone: phone,
+      },
       success_url: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: "https://gieriggroeien.nl/creapure-annuleren",
       metadata: {
