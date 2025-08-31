@@ -191,7 +191,7 @@ app.post("/create-payment-creapure", async (req, res) => {
             product_data: {
               name: description || "Creapure Payment",
             },
-            unit_amount: amounts[amount], // already in cents
+            unit_amount: amounts[amountAsNumber], // already in cents
           },
           quantity: 1,
         },
@@ -249,10 +249,7 @@ app.post(
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const meta = session.metadata || {};
-
-      console.log('received meta', meta);
-
+      const meta = { ...session.metadata, amount: parseFloat(session.metadata.amount) }
       try {
         const address = session.shipping_details?.address || {
           line1: `${meta.street} ${meta.houseNumber}${meta.addition ? " " + meta.addition : ""
