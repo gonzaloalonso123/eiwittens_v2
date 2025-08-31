@@ -180,6 +180,7 @@ app.post("/create-payment-creapure", async (req, res) => {
     const userId = randomUUID();
     const fullStreetAndNumber = `${street} ${houseNumber}${addition ? " " + addition : ""
       }`;
+    const amountAsNumber = parseInt(amount);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "ideal"], // Add iDEAL for NL
@@ -212,7 +213,7 @@ app.post("/create-payment-creapure", async (req, res) => {
         postal,
         email,
         userId,
-        amount,
+        amount: amountAsNumber,
         offers: !!offers,
       },
       shipping_address_collection: {
