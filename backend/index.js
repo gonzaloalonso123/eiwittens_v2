@@ -26,8 +26,6 @@ const { createMollieClient } = require('@mollie/api-client');
 const { generateNickname } = require("./utils");
 const { randomUUID } = require("crypto");
 const { sendCreapureInvoice } = require("./resend");
-import Stripe from "stripe";
-
 
 app.use(
   cors({
@@ -134,7 +132,7 @@ require('dotenv').config();
 
 ///STRIPE IMPLEMENTATION///
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const amounts = {
   1: 2800,  // Stripe wants cents
@@ -143,6 +141,7 @@ const amounts = {
   4: 8800,
   5: 11000,
 };
+
 
 app.post("/create-payment-creapure", async (req, res) => {
   console.log("Payment request hit the server:", req.body);
@@ -170,9 +169,8 @@ app.post("/create-payment-creapure", async (req, res) => {
 
   try {
     const userId = randomUUID();
-    const fullStreetAndNumber = `${street} ${houseNumber}${
-      addition ? " " + addition : ""
-    }`;
+    const fullStreetAndNumber = `${street} ${houseNumber}${addition ? " " + addition : ""
+      }`;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "ideal"], // Add iDEAL for NL
@@ -247,9 +245,8 @@ app.post(
 
       try {
         const address = session.shipping_details?.address || {
-          line1: `${meta.street} ${meta.houseNumber}${
-            meta.addition ? " " + meta.addition : ""
-          }`,
+          line1: `${meta.street} ${meta.houseNumber}${meta.addition ? " " + meta.addition : ""
+            }`,
           city: meta.city,
           postal_code: meta.postal,
           country: meta.country,
