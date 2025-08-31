@@ -26,6 +26,7 @@ const { createMollieClient } = require('@mollie/api-client');
 const { generateNickname } = require("./utils");
 const { randomUUID } = require("crypto");
 const { sendCreapureInvoice } = require("./resend");
+const bodyParser = require("body-parser");
 
 app.use(
   cors({
@@ -218,8 +219,7 @@ app.post("/create-payment-creapure", async (req, res) => {
   }
 });
 
-// Stripe requires raw body for webhook verification
-import bodyParser from "body-parser";
+
 
 app.post(
   "/payment-webhook-creapure",
