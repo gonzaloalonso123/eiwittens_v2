@@ -133,7 +133,7 @@ const getReferralCounts = async () => {
       if (!referralCounts[data.referralCode]) {
         referralCounts[data.referralCode] = 0;
       }
-      referralCounts[data.referralCode]++;
+      referralCounts[data.referralCode]+=data.amount_kilograms;
     }
   });
   return referralCounts;
@@ -208,10 +208,10 @@ const getAmountGoal = async () => {
     return 0;
   }
   const data = doc.data();
-  const totalAmount = data.amount || 0 + data.extra_amount || 0;
+  const totalAmount = data.amount_kilograms || 0 + data.extra_amount || 0;
   return {
     totalAmount: totalAmount,
-    totalKilograms: data.amount_kilograms || 0,
+    totalKilograms: totalAmount,
   };
 };
 
@@ -247,3 +247,4 @@ module.exports = {
   getReferralCounts,
   migrate,
 };
+
