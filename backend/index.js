@@ -217,9 +217,9 @@ app.post("/create-payment-creapure", async (req, res) => {
         amount: amountAsNumber,
         offers: !!offers,
       },
-      shipping_address_collection: {
-        allowed_countries: ["NL", "BE", "DE"], // adjust as needed
-      },
+      // shipping_address_collection: {
+      //   allowed_countries: ["NL", "BE", "DE"], // adjust as needed
+      // },
     });
 
     res.json({ paymentUrl: session.url });
