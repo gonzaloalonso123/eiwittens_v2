@@ -40,7 +40,15 @@ app.use(
     ],
   })
 );
-app.use(express.json());
+app.use(
+  (req, res, next) => {
+    if (req.originalUrl.startsWith("/payment-webhook-creapure")) {
+      next();
+    } else {
+      express.json()(req, res, next);
+    }
+  }
+);
 app.use(express.urlencoded({ extended: true }));
 
 addProductToTracking("AzyO2U45IQMRvwXv9zJj");
