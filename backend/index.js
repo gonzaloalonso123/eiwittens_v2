@@ -180,8 +180,7 @@ app.post("/create-payment-creapure", async (req, res) => {
     const userId = randomUUID();
     const fullStreetAndNumber = `${street} ${houseNumber}${addition ? " " + addition : ""
       }`;
-    const amountAsNumber = parseInt(amount);
-
+    const amountAsNumber = parseFloat(amount);
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "ideal"], // Add iDEAL for NL
       mode: "payment",
@@ -251,6 +250,8 @@ app.post(
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       const meta = session.metadata || {};
+
+      console.log('received meta', meta);
 
       try {
         const address = session.shipping_details?.address || {
