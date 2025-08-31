@@ -184,7 +184,7 @@ app.post("/create-payment-creapure", async (req, res) => {
       }`;
     const amountAsNumber = parseFloat(amount);
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "ideal"], // Add iDEAL for NL
+      payment_method_types: ["ideal"], // Add iDEAL for NL
       mode: "payment",
       line_items: [
         {
