@@ -171,7 +171,7 @@ export async function sendReferralProgramEmail(customerData) {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://gieriggroeien.nl/claim-jouw-unieke-creapure-referral-link?userId=${id}" style="display: inline-block; background: linear-gradient(135deg, #00BDC6, #ff630d); color: white; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; margin: 5px; box-shadow: 0 4px 15px rgba(0, 189, 198, 0.3);">
+          <a href="https://gieriggroeien.nl/claim-jouw-unieke-creapure-referral-link?userId=${id}" style="display: inline-block; background-color: #ff630d; color: white; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; margin: 5px; box-shadow: 0 4px 15px rgba(0, 189, 198, 0.3);">
             Claim hier jouw link
           </a>
           <br>
