@@ -193,7 +193,7 @@ app.post("/create-payment-creapure", async (req, res) => {
             product_data: {
               name: description || "Creapure Payment",
             },
-            unit_amount: isTest ? 0.01 : amounts[amountAsNumber], // already in cents
+            unit_amount: isTest ? 1 : amounts[amountAsNumber],
           },
           quantity: 1,
         },
