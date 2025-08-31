@@ -175,9 +175,6 @@ export async function sendReferralProgramEmail(customerData) {
             Claim hier jouw link
           </a>
           <br>
-          <a href="#" style="display: inline-block; background-color: #3498db; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; margin: 5px;">
-            Bekijk het leaderboard
-          </a>
         </div>
         
         <p style="background-color: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
@@ -196,13 +193,13 @@ export async function sendReferralProgramEmail(customerData) {
         </p>
       </div>
     `,
-}).catch ((error) => {
-  console.error("Error sending referral program email:", error)
-})
+  }).catch((error) => {
+    console.error("Error sending referral program email:", error)
+  })
 
-console.log("Referral email send result:", result)
+  console.log("Referral email send result:", result)
 
-return result
+  return result
 }
 
 
