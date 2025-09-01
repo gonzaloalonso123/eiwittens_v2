@@ -126,16 +126,29 @@ const createCreapurePayment = async (payment) => {
 
 const getReferralCounts = async () => {
   const referralCounts = {};
-  const querySnapshot = await db.collection("creapure-payments").get();
-  querySnapshot.forEach((doc) => {
+  
+  // First, get all users with nicknames and give them 1 participation ticket
+  const usersQuerySnapshot = await db.collection("creapure-users").where("nickname", "!=", "").get();
+  usersQuerySnapshot.forEach((doc) => {
+    const userData = doc.data();
+    if (userData.nickname) {
+      referralCounts[userData.nickname] = 1; // Base participation ticket
+    }
+  });
+  
+  // Then, add additional tickets from referrals
+  const paymentsQuerySnapshot = await db.collection("creapure-payments").get();
+  paymentsQuerySnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.referralCode) {
       if (!referralCounts[data.referralCode]) {
-        referralCounts[data.referralCode] = 0;
+        referralCounts[data.referralCode] = 1; // Base ticket if not already set
+      } else {
+        referralCounts[data.referralCode] += data.amount_kilograms; // Add referral tickets
       }
-      referralCounts[data.referralCode]+=data.amount_kilograms;
     }
   });
+  
   return referralCounts;
 }
 
