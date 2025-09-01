@@ -221,7 +221,7 @@ const getAmountGoal = async () => {
     return 0;
   }
   const data = doc.data();
-  const totalAmount = data.amount_kilograms || 0 + data.extra_amount || 0;
+  const totalAmount = (data.amount_kilograms || 0) + (data.extra_amount || 0);
   return {
     totalAmount: totalAmount,
     totalKilograms: totalAmount,
