@@ -494,7 +494,7 @@ app.post('/add-nickname', async (req, res) => {
     if (exists) {
       return res.status(400).send('Nickname already exists');
     }
-    const updatedNickname = await addNicknameToUser(userId, nickname);
+    const updatedNickname = await addNicknameToUser(userId, nickname.replace(/[^a-zA-Z0-9_-]/g, ''));
     res.json({ nickname: updatedNickname });
   } catch (error) {
     console.error('Error adding nickname:', error);
