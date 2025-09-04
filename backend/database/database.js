@@ -126,29 +126,40 @@ const createCreapurePayment = async (payment) => {
 
 const getReferralCounts = async () => {
   const referralCounts = {};
-  
+
+  const users = [];
   // First, get all users with nicknames and give them 1 participation ticket
   const usersQuerySnapshot = await db.collection("creapure-users").where("nickname", "!=", "").get();
   usersQuerySnapshot.forEach((doc) => {
     const userData = doc.data();
     if (userData.nickname) {
-      referralCounts[userData.nickname] = 1; // Base participation ticket
+      referralCounts[userData.nickname] = 0;
     }
+    users.push({ id: doc.id, ...userData });
   });
-  
+
   // Then, add additional tickets from referrals
   const paymentsQuerySnapshot = await db.collection("creapure-payments").get();
   paymentsQuerySnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.referralCode) {
       if (!referralCounts[data.referralCode]) {
-        referralCounts[data.referralCode] = 1; // Base ticket if not already set
+        referralCounts[data.referralCode] = 1;
       } else {
-        referralCounts[data.referralCode] += data.amount_kilograms; // Add referral tickets
+        referralCounts[data.referralCode] += data.amount_kilograms;
+      }
+    }
+    const user = users.find(user => user.id === data.userId);
+    if (user && user.nickname) {
+      if (referralCounts[user.nickname]) {
+        referralCounts[user.nickname] += data.amount_kilograms;
+      }
+      else {
+        referralCounts[user.nickname] = data.amount_kilograms || 0;
       }
     }
   });
-  
+
   return referralCounts;
 }
 
