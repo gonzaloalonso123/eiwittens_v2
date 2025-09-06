@@ -162,7 +162,7 @@ const getReferralCounts = async () => {
 
   randomUserNames.forEach(name => {
     if (!referralCounts[name]) {
-      referralCounts[name] = 0;
+      referralCounts[name] = 1;
     }
   });
 
