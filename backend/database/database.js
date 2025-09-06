@@ -160,8 +160,34 @@ const getReferralCounts = async () => {
     }
   });
 
+  randomUserNames.forEach(name => {
+    if (!referralCounts[name]) {
+      referralCounts[name] = 0;
+    }
+  });
+
   return referralCounts;
 }
+
+const randomUserNames = [
+  "krachtpatser",
+  "spierbundel",
+  "creatinewinnar",
+  "fitness8fanaat",
+  "gymheld",
+  "krachtkoning",
+  "GANDALF",
+  "Huuuuuuuuu",
+  "TheRock",
+  "KROKSONSTEROIDS",
+  "MUSCLEMASTER",
+  "BicepsBeast",
+  "DeadliftDynamo",
+  "DAANKP",
+  "Tomas97",
+  "GaryTheCat",
+  "GOO77",
+]
 
 const getUserByReferralCode = async (referralCode) => {
   const querySnapshot = await db.collection("creapure-users").where("nickname", "==", referralCode).get();
