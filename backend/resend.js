@@ -1,7 +1,7 @@
-import { Resend } from "resend"
-import { CustomInvoiceGenerator } from "./custom-invoice-generator.js"
-import { generateInvoiceNumber } from "./utils.js"
-import 'dotenv/config';
+const { Resend } = require("resend")
+const { CustomInvoiceGenerator } = require("./custom-invoice-generator.js")
+const { generateInvoiceNumber } = require("./utils.js")
+require('dotenv/config');
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 console.log("Resend API Key:", process.env.RESEND_API_KEY)
@@ -54,7 +54,7 @@ const PRICING_TIERS = {
   },
 }
 
-export async function sendCreapureInvoice(customerData) {
+async function sendCreapureInvoice(customerData) {
   const { name, email, address, amount } = customerData
 
   const pricing = PRICING_TIERS[amount]
@@ -136,7 +136,7 @@ export async function sendCreapureInvoice(customerData) {
   return result
 }
 
-export async function sendReferralProgramEmail(customerData) {
+async function sendReferralProgramEmail(customerData) {
   const { name, email, id } = customerData
 
   const result = await resend.emails.send({
@@ -200,6 +200,69 @@ export async function sendReferralProgramEmail(customerData) {
   console.log("Referral email send result:", result)
 
   return result
+}
+
+async function sendCreapureUpdateEmail(customerData) {
+  const { firstName, email, id, nickname } = customerData
+
+  const referralUrl = nickname
+    ? `https://gieriggroeien.nl/creapure-crowdfund-actie/?ref=${nickname}`
+    : `https://gieriggroeien.nl/claim-jouw-unieke-creapure-referral-link?userId=${id}`
+
+  const result = await resend.emails.send({
+    from: "GierigGroeien <info@creapure.gieriggroeien.nl>",
+    to: email,
+    subject: "Update: al 334 kg besteld – samen op weg naar 500 kg Creapure",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">        
+        <h2 style="color: #00BDC6;">Hoi ${firstName},</h2>
+        
+        <p>Goed nieuws: samen hebben we al 334 kg van de 500 kg Creapure bereikt. De community groeit snel, maar we zijn er nog niet.</p>
+        
+        <p>Wil je nog een extra kilo toevoegen of vrienden uitnodigen?</p>
+        
+        <p>Iedere bestelling helpt ons dichter bij de 500 kg.</p>
+        
+        <p>Via jouw persoonlijke link verdien je bovendien extra loterijtickets.</p>
+        
+        <div style="background-color: #f0feff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00BDC6;">
+          <p style="margin: 5px 0;"><strong>👉 Deel jouw eigen referral link:</strong></p>
+          <a href="${referralUrl}" style="color: #00BDC6; text-decoration: none;">${referralUrl}</a>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://gieriggroeien.nl/creapure-crowdfund-actie-hoeveelheid/" style="display: inline-block; background-color: #ff630d; color: white; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; margin: 5px; box-shadow: 0 4px 15px rgba(255, 99, 13, 0.3);">
+            Bestel een extra kilo Creapure
+          </a>
+        </div>
+        
+        <p style="background: linear-gradient(135deg, #f0feff, #fff5f0); padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #00BDC6;">
+          <strong style="color: #00BDC6;">De actie loopt tot 14 september.</strong> Daarna sluiten we de crowdfunding.
+        </p>
+        
+        <p>Bedankt dat je meedoet en helpt Creapure samen betaalbaar te maken in Nederland.</p>
+        
+        <hr style="border: none; border-top: 2px solid #00BDC6; margin: 30px 0;">
+        
+        <p style="text-align: center; color: #666;">
+          Team GierigGroeien<br>
+          <a href="https://www.gieriggroeien.nl" style="color: #00BDC6;">gieriggroeien.nl</a>
+        </p>
+      </div>
+    `,
+  }).catch((error) => {
+    console.error("Error sending Creapure update email:", error)
+  })
+
+  console.log("Creapure update email send result:", result)
+
+  return result
+}
+
+module.exports = {
+  sendCreapureInvoice,
+  sendReferralProgramEmail,
+  sendCreapureUpdateEmail
 }
 
 

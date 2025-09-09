@@ -341,6 +341,15 @@ const addTicketToAffiliate = async (userCode) => {
   });
 };
 
+const getAllCreapureUsers = async () => {
+  const usersQuerySnapshot = await db.collection("creapure-users").get();
+  const users = [];
+  usersQuerySnapshot.forEach((doc) => {
+    users.push({ id: doc.id, ...doc.data() });
+  });
+  return users;
+};
+
 module.exports = {
   getProducts,
   createCreapureUser,
@@ -355,6 +364,7 @@ module.exports = {
   addNicknameToUser,
   checkIfNicknameExists,
   getReferralCounts,
+  getAllCreapureUsers,
   migrate,
 };
 

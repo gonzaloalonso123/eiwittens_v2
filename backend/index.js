@@ -17,6 +17,7 @@ const {
   addNicknameToUser,
   getReferralCounts,
   getCreapureUser,
+  getAllCreapureUsers,
 } = require("./database/database");
 const { createBackupFile } = require("./backup");
 const multer = require("multer");
@@ -25,7 +26,7 @@ const { sendToOpenAI } = require("./ia-ingredients");
 const { createMollieClient } = require('@mollie/api-client');
 const { generateNickname } = require("./utils");
 const { randomUUID } = require("crypto");
-const { sendCreapureInvoice } = require("./resend");
+const { sendCreapureInvoice, sendCreapureUpdateEmail } = require("./resend");
 const bodyParser = require("body-parser");
 
 app.use(
@@ -526,6 +527,64 @@ app.get('/referral-counts', async (req, res) => {
   } catch (error) {
     console.error('Error fetching referral counts:', error);
     res.status(500).send('Error fetching referral counts');
+  }
+});
+
+app.post('/send-creapure-update-email', async (req, res) => {
+  try {
+    console.log('Starting to send Creapure update emails to all users...');
+    
+    // Get all users from the creapure-users collection
+    const users = await getAllCreapureUsers();
+    
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'No users found' });
+    }
+
+    console.log(`Found ${users.length} users. Sending emails...`);
+
+    let emailsSent = 0;
+    let emailsFailed = 0;
+    const failedEmails = [];
+
+    // Send emails to all users
+    for (const user of users) {
+      try {
+        if (user.email && user.firstName) {
+          await sendCreapureUpdateEmail({
+            firstName: user.firstName,
+            email: user.email,
+            id: user.id,
+            nickname: user.nickname
+          });
+          emailsSent++;
+          console.log(`Email sent to ${user.email}`);
+        } else {
+          console.log(`Skipping user ${user.id} - missing email or firstName`);
+          emailsFailed++;
+          failedEmails.push({ id: user.id, reason: 'Missing email or firstName' });
+        }
+      } catch (error) {
+        console.error(`Failed to send email to ${user.email}:`, error);
+        emailsFailed++;
+        failedEmails.push({ email: user.email, reason: error.message });
+      }
+    }
+
+    res.json({
+      message: 'Bulk email sending completed',
+      totalUsers: users.length,
+      emailsSent,
+      emailsFailed,
+      failedEmails
+    });
+
+  } catch (error) {
+    console.error('Error sending bulk emails:', error);
+    res.status(500).json({ 
+      error: 'Error sending bulk emails',
+      details: error.message 
+    });
   }
 });
 
