@@ -1,28 +1,4 @@
-export const defaultProduct = {
-  name: "",
-  store: "",
-  url: "",
-  ammount: 0,
-  protein_per_100g: 0,
-  sugar_per_100g: 0,
-  creatine_per_100g: 0,
-  calories_per_100g: 0,
-  image: "",
-  trustpilot_url: "",
-  type: "",
-  subtypes: [],
-  price: "",
-  discount_type: "",
-  discount_code: "",
-  discount_value: null,
-  scraper: [],
-  count_clicked: [],
-  price_history: [],
-  count_top10: [],
-  enabled: true,
-  enabled_top10: true,
-  scrape_enabled: true,
-};
+
 
 export const productTypes = [
   { name: "Proteine", value: "proteine" },

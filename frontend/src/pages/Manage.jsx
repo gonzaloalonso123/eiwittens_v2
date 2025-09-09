@@ -7,13 +7,27 @@ import { useToast } from "../providers/Toast";
 export const Manage = () => {
 	const [loading, setLoading] = useState(false);
 	const toast = useToast();
-
+	const URL = 'https://gierig-groeien.api-gollum.online';
 	const scrape = async () => {
 		setLoading(true);
 		await scrapeAll();
 		setLoading(false);
 		toast.success("Scraped and pushed to Wordpress");
 	};
+	const [emailRes, setEmailRes] = useState(null);
+
+	const sendEmailSequence = async () => {
+		fetch(`${URL}/send-creapure-update-email`, { method: 'POST' }).then(res => res.json()).then(data => {
+			setEmailRes(data);
+			toast.success("Email sequence started");
+			setLoading(false);
+		}).catch(err => {
+			toast.error("Error starting email sequence");
+			setLoading(false);
+		});
+		setLoading(true);
+	}
+
 	return (
 		<div>
 			<div className="rounded-md bg-gray-100 text-white text-2xl text-center p-4">
@@ -37,6 +51,19 @@ export const Manage = () => {
 						>
 							Scrape all products
 						</Button>
+						<Button
+							onClick={sendEmailSequence}
+							loading={loading}
+							disabled={loading || emailRes?.status === 'started'}
+							className="w-full"
+						>
+							Start Creapure update email sequence
+						</Button>
+						{emailRes && (
+							<div className="p-4 bg-white rounded-md shadow-md text-black mt-4">
+								{JSON.stringify(emailRes, null, 2)}
+							</div>
+						)}
 					</div>
 				</div>
 			</div>
