@@ -19,7 +19,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
-    "firebase": "^10.14.0",
     "firebase-admin": "^12.6.0",
     "jsdom": "^26.0.0",
     "jspdf": "^3.0.1",

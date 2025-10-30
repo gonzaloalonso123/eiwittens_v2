@@ -26,7 +26,7 @@ const { sendToOpenAI } = require("./ia-ingredients");
 const { createMollieClient } = require('@mollie/api-client');
 const { generateNickname } = require("./utils");
 const { randomUUID } = require("crypto");
-const { sendCreapureInvoice, sendCreapureUpdateEmail } = require("./resend");
+const { sendCreapureInvoice, sendCreapureUpdateEmail, sendCreapureLeaderboardEmail, sendCreapureThankYouEmail } = require("./resend");
 const bodyParser = require("body-parser");
 
 app.use(
@@ -142,174 +142,174 @@ require('dotenv').config();
 
 ///STRIPE IMPLEMENTATION///
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-const amounts = {
-  1: 2800,  // Stripe wants cents
-  2: 4900,
-  3: 6800,
-  4: 8800,
-  5: 11000,
-};
-
-
-app.post("/create-payment-creapure", async (req, res) => {
-  console.log("Payment request hit the server:", req.body);
-
-  const {
-    amount,
-    description,
-    ref,
-    firstName,
-    lastName,
-    phone,
-    country,
-    street,
-    houseNumber,
-    addition,
-    city,
-    postal,
-    offers,
-    email,
-  } = req.body;
-
-  if (!amounts[amount]) {
-    return res.status(400).send("Invalid amount selected");
-  }
-
-  const isTest = firstName === "testing tester";
-
-  try {
-    const userId = randomUUID();
-    const fullStreetAndNumber = `${street} ${houseNumber}${addition ? " " + addition : ""
-      }`;
-    const amountAsNumber = parseFloat(amount);
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["ideal"],
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: "eur",
-            product_data: {
-              name: description || "Creapure Payment",
-            },
-            unit_amount: isTest ? 1 : amounts[amountAsNumber],
-          },
-          quantity: 1,
-        },
-      ],
-      customer_email: email,
-      success_url: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: "https://gieriggroeien.nl/creapure-annuleren",
-      metadata: {
-        referralCode: ref || null,
-        firstName,
-        lastName,
-        phone,
-        country,
-        street,
-        houseNumber,
-        addition: addition || null,
-        city,
-        postal,
-        email,
-        userId,
-        amount: amountAsNumber,
-        offers: !!offers,
-      },
-      // shipping_address_collection: {
-      //   allowed_countries: ["NL", "BE", "DE"], // adjust as needed
-      // },
-    });
-
-    res.json({ paymentUrl: session.url });
-  } catch (error) {
-    console.error("Error creating Stripe session:", error);
-    res.status(500).send("Error initiating payment");
-  }
-});
+// const amounts = {
+//   1: 2800,  // Stripe wants cents
+//   2: 4900,
+//   3: 6800,
+//   4: 8800,
+//   5: 11000,
+// };
 
 
+// app.post("/create-payment-creapure", async (req, res) => {
+//   console.log("Payment request hit the server:", req.body);
 
-app.post(
-  "/payment-webhook-creapure",
-  bodyParser.raw({ type: "application/json" }),
-  async (req, res) => {
-    const sig = req.headers["stripe-signature"];
-    let event;
+//   const {
+//     amount,
+//     description,
+//     ref,
+//     firstName,
+//     lastName,
+//     phone,
+//     country,
+//     street,
+//     houseNumber,
+//     addition,
+//     city,
+//     postal,
+//     offers,
+//     email,
+//   } = req.body;
 
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (err) {
-      console.error("Webhook signature verification failed:", err.message);
-      return res.sendStatus(400);
-    }
+//   if (!amounts[amount]) {
+//     return res.status(400).send("Invalid amount selected");
+//   }
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const meta = { ...session.metadata, amount: parseFloat(session.metadata.amount) }
-      try {
-        const address = session.shipping_details?.address || {
-          line1: `${meta.street} ${meta.houseNumber}${meta.addition ? " " + meta.addition : ""
-            }`,
-          city: meta.city,
-          postal_code: meta.postal,
-          country: meta.country,
-        };
+//   const isTest = firstName === "testing tester";
 
-        await createCreapurePayment({
-          amount_money: session.amount_total / 100,
-          amount_kilograms: meta.amount,
-          address: {
-            streetAndNumber: address.line1,
-            city: address.city,
-            postalCode: address.postal_code,
-            country: address.country,
-          },
-          paymentId: session.id,
-          firstName: meta.firstName,
-          lastName: meta.lastName,
-          phone: meta.phone,
-          country: meta.country,
-          street: meta.street,
-          houseNumber: meta.houseNumber,
-          addition: meta.addition,
-          city: meta.city,
-          postal: meta.postal,
-          email: meta.email,
-          offers: meta.offers,
-          referralCode: meta.referralCode,
-          userId: meta.userId,
-        });
+//   try {
+//     const userId = randomUUID();
+//     const fullStreetAndNumber = `${street} ${houseNumber}${addition ? " " + addition : ""
+//       }`;
+//     const amountAsNumber = parseFloat(amount);
+//     const session = await stripe.checkout.sessions.create({
+//       payment_method_types: ["ideal"],
+//       mode: "payment",
+//       line_items: [
+//         {
+//           price_data: {
+//             currency: "eur",
+//             product_data: {
+//               name: description || "Creapure Payment",
+//             },
+//             unit_amount: isTest ? 1 : amounts[amountAsNumber],
+//           },
+//           quantity: 1,
+//         },
+//       ],
+//       customer_email: email,
+//       success_url: `https://gieriggroeien.nl/creapure-bedankt?userId=${userId}&session_id={CHECKOUT_SESSION_ID}`,
+//       cancel_url: "https://gieriggroeien.nl/creapure-annuleren",
+//       metadata: {
+//         referralCode: ref || null,
+//         firstName,
+//         lastName,
+//         phone,
+//         country,
+//         street,
+//         houseNumber,
+//         addition: addition || null,
+//         city,
+//         postal,
+//         email,
+//         userId,
+//         amount: amountAsNumber,
+//         offers: !!offers,
+//       },
+//       // shipping_address_collection: {
+//       //   allowed_countries: ["NL", "BE", "DE"], // adjust as needed
+//       // },
+//     });
 
-        await createCreapureUser(meta.userId, {
-          firstName: meta.firstName,
-          lastName: meta.lastName,
-          phone: meta.phone,
-          email: meta.email,
-        });
+//     res.json({ paymentUrl: session.url });
+//   } catch (error) {
+//     console.error("Error creating Stripe session:", error);
+//     res.status(500).send("Error initiating payment");
+//   }
+// });
 
-        addAmountToGoal(meta.amount);
-        sendCreapureInvoice({
-          email: meta.email,
-          address: `${address.line1}, ${address.postal_code} ${address.city}, ${address.country}`,
-          name: `${meta.firstName} ${meta.lastName}`,
-          amount: meta.amount,
-          id: meta.userId,
-        });
-      } catch (err) {
-        console.error("Error handling Stripe webhook:", err);
-      }
-    }
 
-    res.sendStatus(200);
-  }
-);
+
+// app.post(
+//   "/payment-webhook-creapure",
+//   bodyParser.raw({ type: "application/json" }),
+//   async (req, res) => {
+//     const sig = req.headers["stripe-signature"];
+//     let event;
+
+//     try {
+//       event = stripe.webhooks.constructEvent(
+//         req.body,
+//         sig,
+//         process.env.STRIPE_WEBHOOK_SECRET
+//       );
+//     } catch (err) {
+//       console.error("Webhook signature verification failed:", err.message);
+//       return res.sendStatus(400);
+//     }
+
+//     if (event.type === "checkout.session.completed") {
+//       const session = event.data.object;
+//       const meta = { ...session.metadata, amount: parseFloat(session.metadata.amount) }
+//       try {
+//         const address = session.shipping_details?.address || {
+//           line1: `${meta.street} ${meta.houseNumber}${meta.addition ? " " + meta.addition : ""
+//             }`,
+//           city: meta.city,
+//           postal_code: meta.postal,
+//           country: meta.country,
+//         };
+
+//         await createCreapurePayment({
+//           amount_money: session.amount_total / 100,
+//           amount_kilograms: meta.amount,
+//           address: {
+//             streetAndNumber: address.line1,
+//             city: address.city,
+//             postalCode: address.postal_code,
+//             country: address.country,
+//           },
+//           paymentId: session.id,
+//           firstName: meta.firstName,
+//           lastName: meta.lastName,
+//           phone: meta.phone,
+//           country: meta.country,
+//           street: meta.street,
+//           houseNumber: meta.houseNumber,
+//           addition: meta.addition,
+//           city: meta.city,
+//           postal: meta.postal,
+//           email: meta.email,
+//           offers: meta.offers,
+//           referralCode: meta.referralCode,
+//           userId: meta.userId,
+//         });
+
+//         await createCreapureUser(meta.userId, {
+//           firstName: meta.firstName,
+//           lastName: meta.lastName,
+//           phone: meta.phone,
+//           email: meta.email,
+//         });
+
+//         addAmountToGoal(meta.amount);
+//         sendCreapureInvoice({
+//           email: meta.email,
+//           address: `${address.line1}, ${address.postal_code} ${address.city}, ${address.country}`,
+//           name: `${meta.firstName} ${meta.lastName}`,
+//           amount: meta.amount,
+//           id: meta.userId,
+//         });
+//       } catch (err) {
+//         console.error("Error handling Stripe webhook:", err);
+//       }
+//     }
+
+//     res.sendStatus(200);
+//   }
+// );
 
 ///STRIPE IMPLEMENTATION
 
@@ -471,122 +471,233 @@ app.post(
 // });
 
 
-const GOAL = 500;
-app.get('/creapure-progress', async (req, res) => {
-  try {
-    const { totalKilograms } = await getAmountGoal();
-    res.json({
-      goalKg: GOAL,
-      claimedKg: totalKilograms,
-    });
-  } catch (error) {
-    console.error('Error fetching Creapure amount:', error);
-    res.status(500).send('Error fetching Creapure amount');
-  }
-});
+// const GOAL = 500;
+// app.get('/creapure-progress', async (req, res) => {
+//   try {
+//     const { totalKilograms } = await getAmountGoal();
+//     res.json({
+//       goalKg: GOAL,
+//       claimedKg: totalKilograms,
+//     });
+//   } catch (error) {
+//     console.error('Error fetching Creapure amount:', error);
+//     res.status(500).send('Error fetching Creapure amount');
+//   }
+// });
 
-app.post('/add-nickname', async (req, res) => {
-  const { userId, nickname } = req.body;
-  if (!userId || !nickname) {
-    return res.status(400).send('User ID and nickname are required');
-  }
-  try {
-    const exists = await checkIfNicknameExists(nickname);
-    if (exists) {
-      return res.status(400).send('Nickname already exists');
-    }
-    const updatedNickname = await addNicknameToUser(userId, nickname.replace(/[^a-zA-Z0-9_-]/g, ''));
-    res.json({ nickname: updatedNickname });
-  } catch (error) {
-    console.error('Error adding nickname:', error);
-    res.status(500).send('Error adding nickname');
-  }
-});
+// app.post('/add-nickname', async (req, res) => {
+//   const { userId, nickname } = req.body;
+//   if (!userId || !nickname) {
+//     return res.status(400).send('User ID and nickname are required');
+//   }
+//   try {
+//     const exists = await checkIfNicknameExists(nickname);
+//     if (exists) {
+//       return res.status(400).send('Nickname already exists');
+//     }
+//     const updatedNickname = await addNicknameToUser(userId, nickname.replace(/[^a-zA-Z0-9_-]/g, ''));
+//     res.json({ nickname: updatedNickname });
+//   } catch (error) {
+//     console.error('Error adding nickname:', error);
+//     res.status(500).send('Error adding nickname');
+//   }
+// });
 
-app.get("/creapure-user/:id", async (req, res) => {
-  const userId = req.params.id;
-  if (!userId) {
-    return res.status(400).send('User ID is required');
-  }
-  try {
-    const user = await getCreapureUser(userId);
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-    res.json(user);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).send('Error fetching user');
-  }
-})
+// app.get("/creapure-user/:id", async (req, res) => {
+//   const userId = req.params.id;
+//   if (!userId) {
+//     return res.status(400).send('User ID is required');
+//   }
+//   try {
+//     const user = await getCreapureUser(userId);
+//     if (!user) {
+//       return res.status(404).send('User not found');
+//     }
+//     res.json(user);
+//   } catch (error) {
+//     console.error('Error fetching user:', error);
+//     res.status(500).send('Error fetching user');
+//   }
+// })
 
-app.get('/referral-counts', async (req, res) => {
-  try {
-    const referralCounts = await getReferralCounts();
-    res.json(referralCounts);
-  } catch (error) {
-    console.error('Error fetching referral counts:', error);
-    res.status(500).send('Error fetching referral counts');
-  }
-});
+// app.get('/referral-counts', async (req, res) => {
+//   try {
+//     const referralCounts = await getReferralCounts();
+//     res.json(referralCounts);
+//   } catch (error) {
+//     console.error('Error fetching referral counts:', error);
+//     res.status(500).send('Error fetching referral counts');
+//   }
+// });
 
-app.post('/send-creapure-update-email', async (req, res) => {
-  try {
-    console.log('Starting to send Creapure update emails to all users...');
-    
-    // Get all users from the creapure-users collection
-    const users = await getAllCreapureUsers();
-    
-    if (users.length === 0) {
-      return res.status(404).json({ message: 'No users found' });
-    }
+// app.post('/send-creapure-update-email', async (req, res) => {
+//   try {
+//     console.log('Starting to send Creapure update emails to all users...');
 
-    console.log(`Found ${users.length} users. Sending emails...`);
+//     // Get all users from the creapure-users collection
+//     const users = await getAllCreapureUsers();
 
-    let emailsSent = 0;
-    let emailsFailed = 0;
-    const failedEmails = [];
+//     if (users.length === 0) {
+//       return res.status(404).json({ message: 'No users found' });
+//     }
 
-    // Send emails to all users
-    for (const user of users) {
-      try {
-        if (user.email && user.firstName) {
-          await sendCreapureUpdateEmail({
-            firstName: user.firstName,
-            email: user.email,
-            id: user.id,
-            nickname: user.nickname
-          });
-          emailsSent++;
-          console.log(`Email sent to ${user.email}`);
-        } else {
-          console.log(`Skipping user ${user.id} - missing email or firstName`);
-          emailsFailed++;
-          failedEmails.push({ id: user.id, reason: 'Missing email or firstName' });
-        }
-      } catch (error) {
-        console.error(`Failed to send email to ${user.email}:`, error);
-        emailsFailed++;
-        failedEmails.push({ email: user.email, reason: error.message });
-      }
-    }
+//     console.log(`Found ${users.length} users. Sending emails...`);
 
-    res.json({
-      message: 'Bulk email sending completed',
-      totalUsers: users.length,
-      emailsSent,
-      emailsFailed,
-      failedEmails
-    });
+//     let emailsSent = 0;
+//     let emailsFailed = 0;
+//     const failedEmails = [];
 
-  } catch (error) {
-    console.error('Error sending bulk emails:', error);
-    res.status(500).json({ 
-      error: 'Error sending bulk emails',
-      details: error.message 
-    });
-  }
-});
+//     // Send emails to all users
+//     for (const user of users) {
+//       try {
+//         if (user.email && user.firstName) {
+//           await sendCreapureUpdateEmail({
+//             firstName: user.firstName,
+//             email: user.email,
+//             id: user.id,
+//             nickname: user.nickname
+//           });
+//           emailsSent++;
+//           console.log(`Email sent to ${user.email}`);
+//         } else {
+//           console.log(`Skipping user ${user.id} - missing email or firstName`);
+//           emailsFailed++;
+//           failedEmails.push({ id: user.id, reason: 'Missing email or firstName' });
+//         }
+//       } catch (error) {
+//         console.error(`Failed to send email to ${user.email}:`, error);
+//         emailsFailed++;
+//         failedEmails.push({ email: user.email, reason: error.message });
+//       }
+//     }
+
+//     res.json({
+//       message: 'Bulk email sending completed',
+//       totalUsers: users.length,
+//       emailsSent,
+//       emailsFailed,
+//       failedEmails
+//     });
+
+//   } catch (error) {
+//     console.error('Error sending bulk emails:', error);
+//     res.status(500).json({
+//       error: 'Error sending bulk emails',
+//       details: error.message
+//     });
+//   }
+// });
+
+// app.post('/send-creapure-leaderboard-email', async (req, res) => {
+//   try {
+//     console.log('Starting to send Creapure leaderboard emails to all users...');
+
+//     // Get all users and current referral counts
+//     const [users, referralCounts] = await Promise.all([
+//       getAllCreapureUsers(),
+//       getReferralCounts()
+//     ]);
+
+//     if (!users || users.length === 0) {
+//       return res.status(404).json({ message: 'No users found' });
+//     }
+
+//     // Build top-5 array in the form { name, count }
+//     const entries = Object.entries(referralCounts || {});
+//     const top5 = entries
+//       .sort((a, b) => (b[1] || 0) - (a[1] || 0))
+//       .slice(0, 5)
+//       .map(([nickname, count]) => ({ name: nickname, count: count || 0 }));
+
+//     console.log('Computed leaderboard top 5:', top5);
+
+//     let emailsSent = 0;
+//     let emailsFailed = 0;
+//     const failed = [];
+
+
+//     const mockusers = [{ firstName: 'test', email: 'huntymonster@gmail.com', id: 'mockid', nickname: 'mocknick' }]; // --- IGNORE ---
+//     for (const user of users) {
+//       try {
+//         if (user.email && user.firstName) {
+//           await sendCreapureLeaderboardEmail({
+//             firstName: user.firstName,
+//             email: user.email,
+//             id: user.id,
+//             nickname: user.nickname,
+//           }, top5);
+//           emailsSent++;
+//         } else {
+//           emailsFailed++;
+//           failed.push({ id: user.id, reason: 'Missing email or firstName' });
+//         }
+//       } catch (err) {
+//         emailsFailed++;
+//         failed.push({ email: user.email, reason: err?.message || String(err) });
+//       }
+//     }
+
+//     res.json({
+//       message: 'Leaderboard bulk emails completed',
+//       totalUsers: users.length,
+//       emailsSent,
+//       emailsFailed,
+//       failed,
+//       top5
+//     });
+//   } catch (error) {
+//     console.error('Error sending leaderboard bulk emails:', error);
+//     res.status(500).json({ error: 'Error sending leaderboard bulk emails', details: error.message });
+//   }
+// });
+
+// app.post('/send-creapure-thankyou-email', async (req, res) => {
+//   try {
+//     const dryRun = String(req.query.dryRun || '').toLowerCase() === '1' || String(req.query.dryRun || '').toLowerCase() === 'true';
+//     console.log('Starting thank-you emails to all users...', { dryRun });
+
+//     const users = await getAllCreapureUsers();
+//     if (!users || users.length === 0) {
+//       return res.status(404).json({ message: 'No users found' });
+//     }
+
+//     let emailsSent = 0;
+//     let emailsFailed = 0;
+//     const failed = [];
+
+//     for (const user of users) {
+//       try {
+//         if (user.email && user.firstName) {
+//           if (!dryRun) {
+//             await sendCreapureThankYouEmail({
+//               firstName: user.firstName,
+//               email: user.email,
+//             });
+//           }
+//           emailsSent++;
+//         } else {
+//           emailsFailed++;
+//           failed.push({ id: user.id, reason: 'Missing email or firstName' });
+//         }
+//       } catch (err) {
+//         emailsFailed++;
+//         failed.push({ email: user.email, reason: err?.message || String(err) });
+//       }
+//     }
+
+//     res.json({
+//       message: dryRun ? 'Thank-you bulk emails DRY-RUN completed' : 'Thank-you bulk emails completed',
+//       totalUsers: users.length,
+//       emailsSent,
+//       emailsFailed,
+//       failed,
+//       dryRun,
+//     });
+//   } catch (error) {
+//     console.error('Error sending thank-you bulk emails:', error);
+//     res.status(500).json({ error: 'Error sending thank-you bulk emails', details: error.message });
+//   }
+// });
 
 schedule.scheduleJob({ hour: [6, 12, 18, 0], minute: 0 }, scrapeAndPush);
 schedule.scheduleJob({ hour: 13, minute: 10, dayOfWeek: 0 }, refreshTrustPilot);

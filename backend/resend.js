@@ -4,7 +4,6 @@ const { generateInvoiceNumber } = require("./utils.js")
 require('dotenv/config');
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-console.log("Resend API Key:", process.env.RESEND_API_KEY)
 
 const PRICING_TIERS = {
   1: {
@@ -262,7 +261,104 @@ async function sendCreapureUpdateEmail(customerData) {
 module.exports = {
   sendCreapureInvoice,
   sendReferralProgramEmail,
-  sendCreapureUpdateEmail
+  sendCreapureUpdateEmail,
+  sendCreapureLeaderboardEmail: async function (customerData, top5) {
+    const { firstName, email, id, nickname } = customerData;
+
+    const referralUrl = nickname
+      ? `https://gieriggroeien.nl/creapure-crowdfund-actie/?ref=${nickname}`
+      : `https://gieriggroeien.nl/claim-jouw-unieke-creapure-referral-link?userId=${id}`;
+
+    const safeTop = Array.isArray(top5) ? top5.slice(0, 5) : [];
+    const listHtml = safeTop
+      .map((item, idx) => {
+        const name = item?.name ?? item?.nickname ?? `Deelnemer ${idx + 1}`;
+        const count = item?.count ?? item?.referrals ?? 0;
+        return `<li style="margin: 6px 0;">${idx + 1}. ${name} – ${count} referral${count === 1 ? '' : 's'}</li>`;
+      })
+      .join("");
+
+    try {
+      const result = await resend.emails.send({
+        from: "GierigGroeien <info@creapure.gieriggroeien.nl>",
+        to: email,
+        subject: "Update: dit is de huidige Creapure leaderboard top 5",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">
+            <h2 style="color: #00BDC6;">Hoi ${firstName},</h2>
+            <p>De Creapure crowdfundactie gaat hard – en het wordt spannend op het referral leaderboard. Dit is de huidige top 5:</p>
+            <ol style="padding-left: 20px;">
+              ${listHtml}
+            </ol>
+            <p>Wil je stijgen in de ranking? Deel dan je persoonlijke referral-link met je vrienden. Iedere bestelling via jouw link levert je een extra loterijticket op én een hogere plek in het leaderboard.</p>
+            <h3 style="color: #ff630d;">Wat valt er te winnen?</h3>
+            <ul>
+              <li>Extra prijzen voor de top 3 van het leaderboard</li>
+              <li>6 potjes pre-workout</li>
+              <li>1x 4 kg whey protein</li>
+              <li>3 maanden gratis coaching</li>
+            </ul>
+            <div style="background-color: #f0feff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00BDC6;">
+              <p style="margin: 5px 0;">
+                <strong>👉 Bekijk mijn link</strong><br/>
+                <a href="${referralUrl}" style="color: #00BDC6; text-decoration: none;">${referralUrl}</a>
+              </p>
+            </div>
+            <p style="background: linear-gradient(135deg, #f0feff, #fff5f0); padding: 15px; border-radius: 8px; text-align: center; border: 2px solid #00BDC6;">
+              <strong style="color: #00BDC6;">De actie loopt tot 14 september.</strong> Dit is hét moment om je plek veilig te stellen.
+            </p>
+            <hr style="border: none; border-top: 2px solid #00BDC6; margin: 30px 0;">
+            <p style="text-align: center; color: #666;">
+              Team GierigGroeien<br>
+              <a href="https://www.gieriggroeien.nl" style="color: #00BDC6;">gieriggroeien.nl</a>
+            </p>
+          </div>
+        `,
+      });
+      console.log("Leaderboard email send result:", result);
+      return result;
+    } catch (error) {
+      console.error("Error sending leaderboard email:", error);
+      throw error;
+    }
+  },
+  sendCreapureThankYouEmail: async function (customerData) {
+    const { firstName, email } = customerData;
+    try {
+      const result = await resend.emails.send({
+        from: "GierigGroeien <info@creapure.gieriggroeien.nl>",
+        to: email,
+        subject: "Bedankt – samen hebben we de 500 kg Creapure gehaald!",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">
+            <h2 style="color: #00BDC6;">Hoi ${firstName},</h2>
+            <p>Het is rond: de Creapure-crowdfundactie is vannacht gesloten en we hebben samen de 500 kg gehaald. Iedereen die heeft meegedaan ontvangt z’n bestelling Creapure. 💪</p>
+
+            <div style="background-color: #f0feff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #00BDC6;">
+              <p style="margin: 0;">
+                <strong>Vandaag, 15 september</strong>, starten we met het verzenden van de orders. Je kunt jouw Creapure binnen 3–4 dagen verwachten. Ook maken we vandaag de winnaars van de loterij bekend.
+              </p>
+            </div>
+
+            <p>Met deze actie hebben we laten zien dat we samen kunnen opstaan tegen de bizarre marges van grote sportsupplementenmerken. Door de krachten te bundelen, maken we sportsupplementen betaalbaar voor iedereen.</p>
+
+            <p>Bedankt voor je deelname en support – samen bouwen we verder aan een community die slimmer inkoopt en sterker groeit.</p>
+
+            <hr style="border: none; border-top: 2px solid #00BDC6; margin: 30px 0;">
+            <p style="text-align: center; color: #666;">
+              Team GierigGroeien<br>
+              <a href="https://www.gieriggroeien.nl" style="color: #00BDC6;">gieriggroeien.nl</a>
+            </p>
+          </div>
+        `,
+      });
+      console.log("Thank-you email send result:", result);
+      return result;
+    } catch (error) {
+      console.error("Error sending thank-you email:", error);
+      throw error;
+    }
+  }
 }
 
 
